@@ -1,0 +1,92 @@
+{
+    "components": [
+        "topEntity"
+    ],
+    "dependencies": {
+        "transitive": []
+    },
+    "domains": {
+        "IntelSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "System": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "XilinxSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Synchronous",
+            "reset_polarity": "ActiveHigh"
+        }
+    },
+    "files": [
+        {
+            "name": "topEntity.sdc",
+            "sha256": "c8f553d0b52582658a3f05c915cf3e923a8cddbc3792ed01ebd8aa1dc1fd87cf"
+        },
+        {
+            "name": "FlopoCo_topEntity_types.vhdl",
+            "sha256": "6c1d2c30b6974e68db0dea4330989eefc12cdff859398f8518fc40eb29bc583f"
+        },
+        {
+            "name": "topEntity.vhdl",
+            "sha256": "9ffa0e0d86ddcb106aee99c4ab3666c46d0e9eef2c343c34847c8b10c3f7461e"
+        }
+    ],
+    "flags": [
+        20,
+        20
+    ],
+    "hash": "06d034a2f529bd20c20070a3e55df7e17024503485304a02ca7c3d8883ce8865",
+    "top_component": {
+        "name": "topEntity",
+        "ports_flat": [
+            {
+                "direction": "in",
+                "domain": "XilinxSystem",
+                "is_clock": true,
+                "name": "carg",
+                "type_name": "carg.FlopoCo_topEntity_types.clk_XilinxSystem",
+                "width": 1
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_0",
+                "type_name": "std_logic_vector(31 downto 0)",
+                "width": 32
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_1",
+                "type_name": "std_logic_vector(31 downto 0)",
+                "width": 32
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_2",
+                "type_name": "std_logic_vector(31 downto 0)",
+                "width": 32
+            },
+            {
+                "direction": "out",
+                "is_clock": false,
+                "name": "result",
+                "type_name": "std_logic_vector(31 downto 0)",
+                "width": 32
+            }
+        ]
+    },
+    "version": "unstable"
+}
