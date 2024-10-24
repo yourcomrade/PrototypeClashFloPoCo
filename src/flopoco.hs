@@ -11,7 +11,7 @@ module FlopoCo where
 import Clash.Explicit.Prelude
 import Data.String.Interpolate (__i)
 import Clash.Annotations.Primitive (Primitive(..), HDL(..))
-import GHC.TypeNats (Nat)
+
 import Control.Monad.State (State, liftIO)
 import qualified Data.List as L
 import Data.Text
@@ -38,7 +38,7 @@ import Help(num)
 
 type N = $(num)
 
-
+--type N = 10
 
 -- Type-level version of `num`
 -- numNat :: forall n. KnownNat n => SNat n
@@ -92,7 +92,7 @@ plusFloatBBF _isD _primName _args _resTys = do
 
   -- let entityName = parseEntityName output
   let entityName = "plusFloat"
-
+  
   let meta = emptyBlackBoxMeta {bbKind = TDecl}
       bb = BBFunction (show 'plusFloatTF) 0 (plusFloatTF entityName)
   pure (Right (meta, bb))

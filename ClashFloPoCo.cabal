@@ -115,7 +115,7 @@ common common-options
     -fno-unbox-small-strict-fields
     -fno-unbox-strict-fields
     -ddump-splices
- 
+   
     
   build-depends:
     base,

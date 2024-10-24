@@ -13,7 +13,7 @@ module Lexer (
 ) where
 
 import System.IO
-import Prelude 
+import Prelude
 import qualified Data.List as L
 import qualified Data.Text as T
 import Data.Char (isSpace, isDigit)
@@ -64,36 +64,36 @@ readLines handle = do
 
 isVHDLcomment :: String -> Bool
 isVHDLcomment str  | length str > 2 = if take 2 str == "--" then True else False
-                   | otherwise = False 
+                   | otherwise = False
 getVHDLComment :: String -> Maybe String
 getVHDLComment str | length str > 2 = if take 2 str == "--" then Just $ drop 2 str else Nothing
                    | otherwise = Nothing
-                                                    
+
 containsSpace :: String -> Bool
 containsSpace str = any isSpace str
 
 afterColon :: Maybe [String] -> Maybe [String]
 afterColon Nothing = Nothing
-afterColon (Just wordList) = 
+afterColon (Just wordList) =
     case dropWhile (notElem ':') wordList of
         []       -> Nothing            -- No colon found, return Nothing
         (_:rest) -> Just rest           -- Skip the word with the colon and return the rest
 
 updateInfoEntity :: String -> Maybe InfoEntity -> Maybe InfoEntity
 updateInfoEntity _ Nothing = Nothing
-updateInfoEntity  comment (Just infoen) = 
+updateInfoEntity  comment (Just infoen) =
     if ( containsSpace comment) ==  False then
-        Just infoen 
+        Just infoen
     else
         let wordList = words comment
         in if (length wordList) ==  1  then
             let singleword = head wordList
             in if (elem '('  singleword ) ==  False then
                 Just infoen{name = Just singleword}
-            else 
+            else
                 Just infoen
         else
-            case [word | word <- keywords, elem word wordList] of
+            case [word | word <- keywords, word `elem` wordList] of
                 [] -> Just infoen
                 ["Input"] -> Just infoen {insig =  afterColon (Just wordList)}
                 ["Output"] -> Just infoen {outsig = afterColon (Just wordList)}
@@ -110,32 +110,37 @@ makeListVHDLcomments vhdlcontent =
 getLastInfoEntity :: Maybe [String] -> Maybe InfoEntity -> Maybe InfoEntity
 getLastInfoEntity (Just []) (Just infoen) = Just infoen
 getLastInfoEntity (Just (x:vhdlcomments)) (Just infoen) = getLastInfoEntity (Just vhdlcomments) (updateInfoEntity x (Just infoen))
-   
-        
+
+
 convertMaybeToInt :: Maybe Int -> Int
-convertMaybeToInt = maybe 0 id
+convertMaybeToInt = fromMaybe 0
 
 processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m Int
 processFile process path = do
     handle <- liftIO $ openFile path ReadMode       -- Open the file with liftIO
     contents <- liftIO $ hGetContents handle        -- Read the file's contents
-    let linesContent = lines contents               -- Split contents into lines
-    let vhdlComments = Just linesContent            -- Wrap the list of lines in Maybe
-    
+    -- Force the file contents to be read before closing the handle
+    let !linesContent = lines contents                 -- Strict evaluation
+    let vhdlComments = Just linesContent               -- Wrap in Maybe
+
     -- Initial InfoEntity (can be Nothing or some default value)
     let initialEntity = emptyInfoEntity
-    
+
     -- Apply the processing function
     let result = process vhdlComments (Just initialEntity)
-    
+
     -- Process the result and return an Int
-    liftIO $ case result of
-        Just infoEntity -> print infoEntity         -- Print processed InfoEntity
-        Nothing         -> putStrLn "No InfoEntity found"
-    
+
+    liftIO $ print result
     liftIO $ hClose handle  -- Close the file handle
-    
+    case result of
+        Just infoEntity -> return $ convertMaybeToInt (pipedep infoEntity)
+        Nothing         -> return 0
+
+
+
+
     -- Return the number of lines in the file as the Int result
-    return $ convertMaybeToInt (pipedep initialEntity)
+
 
 

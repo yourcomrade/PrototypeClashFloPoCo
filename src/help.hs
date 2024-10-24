@@ -4,6 +4,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant return" #-}
 module Help (
     genPipeDep,
     floPoCoPath,
@@ -12,11 +14,17 @@ module Help (
     num
 ) where
 
-import qualified FloPoCoCall as FPCC 
+import qualified FloPoCoCall as FPCC
 import Lexer
 import Control.Monad.State (MonadIO, liftIO)
 import Prelude
 import Language.Haskell.TH.Syntax
+
+
+
+floPoCoPath = "/home/minh/flopoco/build/bin/flopoco"
+args = ["frequency=300", "target=Zynq7000", "IEEEFPAdd", "wE=8", "wF=23","name=plusFloat", "registerLargeTables=1"]
+filePath = "flopoco.vhdl"
 
 genPipeDep::MonadIO m => String -> [String] -> String -> m Int
 
@@ -27,11 +35,7 @@ genPipeDep floPoCoPath args filepath = do
     else do
         result <- processFile getLastInfoEntity filepath  -- Ensure processFile returns Int
         return result
-        
 
-floPoCoPath = "/home/minh/flopoco/build/bin/flopoco"
-args = ["frequency=300", "target=Zynq7000", "IEEEFPAdd", "wE=8", "wF=23","name=plusFloat", "registerLargeTables=1"]
-filePath = "flopoco.vhdl"
 -- Convert a type-level natural number (from a literal) to SNat
 --numToSNat :: Int -> Q Type
 --numToSNat n = [t| SNat $(LitT (NumTyLit (fromIntegral n))) |]
@@ -52,6 +56,8 @@ numToSNat n = case n of
 -}
 num:: Q Type
 num = do
+    qRunIO $ putStrLn "From num Q Type"
     delay <- qRunIO $ genPipeDep floPoCoPath args filePath
+    qRunIO $ print delay
     return $ LitT $ NumTyLit $ fromIntegral delay
     --return $ numToSNat $ fromIntegral delay
