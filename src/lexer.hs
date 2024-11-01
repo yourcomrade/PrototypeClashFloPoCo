@@ -5,6 +5,7 @@ module Lexer (
     getVHDLComment,
     containsSpace,
     afterColon,
+    convertMaybeToInt,
     updateInfoEntity,
     makeListVHDLcomments,
     getLastInfoEntity,
@@ -115,27 +116,24 @@ getLastInfoEntity (Just (x:vhdlcomments)) (Just infoen) = getLastInfoEntity (Jus
 convertMaybeToInt :: Maybe Int -> Int
 convertMaybeToInt = fromMaybe 0
 
-processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m Int
+processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m (Maybe InfoEntity)
 processFile process path = do
     handle <- liftIO $ openFile path ReadMode       -- Open the file with liftIO
     contents <- liftIO $ hGetContents handle        -- Read the file's contents
     -- Force the file contents to be read before closing the handle
-    let !linesContent = lines contents                 -- Strict evaluation
-    let vhdlComments = Just linesContent               -- Wrap in Maybe
+    
 
     -- Initial InfoEntity (can be Nothing or some default value)
     let initialEntity = emptyInfoEntity
 
     -- Apply the processing function
-    let result = process vhdlComments (Just initialEntity)
+    let result = process (makeListVHDLcomments contents) (Just initialEntity)
 
     -- Process the result and return an Int
 
     liftIO $ print result
     liftIO $ hClose handle  -- Close the file handle
-    case result of
-        Just infoEntity -> return $ convertMaybeToInt (pipedep infoEntity)
-        Nothing         -> return 0
+    return result
 
 
 

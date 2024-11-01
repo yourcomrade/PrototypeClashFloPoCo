@@ -33,9 +33,9 @@ begin
   plusFloat_inst_block : block
     component plusFloat port
       ( clk : in std_logic
-      ; A : in std_logic_vector(31 downto 0)
-      ; B : in std_logic_vector(31 downto 0)
-      ; C : out std_logic_vector(31 downto 0) );
+      ; X : in std_logic_vector(31 downto 0)
+      ; Y : in std_logic_vector(31 downto 0)
+      ; R : out std_logic_vector(31 downto 0) );
     end component;
   begin
     plusFloat_inst : plusFloat
@@ -141,9 +141,9 @@ begin
   plusFloat_inst_block_0 : block
     component plusFloat port
       ( clk : in std_logic
-      ; A : in std_logic_vector(31 downto 0)
-      ; B : in std_logic_vector(31 downto 0)
-      ; C : out std_logic_vector(31 downto 0) );
+      ; X : in std_logic_vector(31 downto 0)
+      ; Y : in std_logic_vector(31 downto 0)
+      ; R : out std_logic_vector(31 downto 0) );
     end component;
   begin
     plusFloat_inst_0 : plusFloat

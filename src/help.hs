@@ -11,7 +11,9 @@ module Help (
     floPoCoPath,
     args,
     filePath,
-    num
+    num,
+    flopocoPrim,
+    
 ) where
 
 import qualified FloPoCoCall as FPCC
@@ -19,6 +21,11 @@ import Lexer
 import Control.Monad.State (MonadIO, liftIO)
 import Prelude
 import Language.Haskell.TH.Syntax
+import Data.String.Interpolate (__i)
+
+
+import Clash.Annotations.Primitive (Primitive(..))
+import Data.String.Interpolate.Types (InterpSegment(Expression))
 
 
 
@@ -34,7 +41,11 @@ genPipeDep floPoCoPath args filepath = do
         return (-1)
     else do
         result <- processFile getLastInfoEntity filepath  -- Ensure processFile returns Int
-        return result
+        liftIO $ print result
+        case result of
+            Just infoentity -> return $ convertMaybeToInt (pipedep infoentity)
+            Nothing -> return (-1)
+        
 
 -- Convert a type-level natural number (from a literal) to SNat
 --numToSNat :: Int -> Q Type
@@ -54,6 +65,17 @@ numToSNat n = case n of
           in [t| SNat $(LitT $ NumTyLit n) |]
 
 -}
+flopocoPrim :: Name -> Name -> Primitive
+flopocoPrim fprimName ftfName = let
+  primName = fprimName
+  tfName = ftfName
+  in
+    InlineYamlPrimitive [minBound..] [__i|
+        BlackBoxHaskell:
+          name: #{primName}
+          templateFunction: #{tfName}
+          workInfo: Always
+    |]
 num:: Q Type
 num = do
     qRunIO $ putStrLn "From num Q Type"

@@ -130,6 +130,7 @@ common common-options
     process,
     string-interpolate,
     text,
+    pretty-show,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
