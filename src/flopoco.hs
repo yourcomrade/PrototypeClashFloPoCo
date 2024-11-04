@@ -33,7 +33,7 @@ import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
 import Help( infoEn)
-import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
@@ -44,14 +44,54 @@ import Debug.Trace (trace, traceShow)
 import Clash.Primitives.Types (Primitive(BlackBoxHaskell, workInfo))
 import Clash.Driver.Bool (OverridingBool(Always))
 import Text.Show.Pretty(ppShow)
+import Lexer (lengthMaybeStrings)
 
+plusFloatBBTF ::
+  forall s .
+  Backend s =>
+  Text ->
+  BlackBoxContext ->
+  State s Doc
+plusFloatBBTF  entityName bbCtx
+  | [ clk, a, b
+    ] <- L.map fst (DSL.tInputs bbCtx)
+  , [result] <- DSL.tResults bbCtx
+  = do
 
+    plusFloatInstName <- Id.makeBasic (entityName <> "_inst")
+
+    let
+      compInps =
+        [ ("clk", N.Bit)
+        , ("X", DSL.ety a)
+        , ("Y", DSL.ety b) ]
+      compOuts =
+        [ ("R", DSL.ety result) ]
+
+    DSL.declaration (entityName <> "_inst_block") $ do
+      DSL.compInBlock entityName compInps compOuts
+
+      let
+        inps =
+          [ ("clk", clk )
+          , ("X", a)
+          , ("Y", b)
+          ]
+
+        outs =
+          [ ("R", result)
+          ]
+
+      DSL.instDecl Empty (Id.unsafeMake entityName) plusFloatInstName
+        [] inps outs
+  | otherwise = error $ ppShow bbCtx
 --type N = 10
 
 -- Type-level version of `num`
 -- numNat :: forall n. KnownNat n => SNat n
 -- numNat = fromInteger num
 type N = $(getPipeDep infoEn)
+
 xp :: SNat N
 xp = SNat::SNat N
 {-# OPAQUE plusFloat #-}
@@ -63,9 +103,9 @@ plusFloat
   -> DSignal XilinxSystem (n + N) Float
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
-
+$(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
 $(generateBlackBoxFunction (fromJust (name infoEn)))
-
+{-
 {-# ANN plusFloat (
     let
       primName = show 'plusFloat
@@ -78,9 +118,9 @@ $(generateBlackBoxFunction (fromJust (name infoEn)))
           workInfo: Always
       |]) #-}
 
+-}
 
-
---{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
+{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
 
 
 {-
@@ -130,7 +170,7 @@ plusFloatX clk a b =
 -- plusFloatGen :: String -> Int -> Q Dec
 -- plusFloatGen mhz = plusFloatGen mhz
 
--- $(plusFloatGen "plusFloat300Mhz" 300) 
+-- --$(plusFloatGen "plusFloat300Mhz" 300) 
 --
 -- ====>
 --
@@ -175,55 +215,20 @@ plusFloatBBF _ _ _ _ = do
 -}
 
 -- --$(generateBlackBoxFunction "plusFloat")
+{-
 plusFloatTF ::
   HasCallStack =>
   Text ->
   TemplateFunction
 plusFloatTF entityName =
   TemplateFunction
-    [0, 1, 2]
+    [0..2]
     (const True)
     (plusFloatBBTF entityName)
+-}
 
-plusFloatBBTF ::
-  forall s .
-  Backend s =>
-  Text ->
-  BlackBoxContext ->
-  State s Doc
-plusFloatBBTF  entityName bbCtx
-  | [ clk, a, b
-    ] <- L.map fst (DSL.tInputs bbCtx)
-  , [result] <- DSL.tResults bbCtx
-  = do
 
-    plusFloatInstName <- Id.makeBasic (entityName <> "_inst")
 
-    let
-      compInps =
-        [ ("clk", N.Bit)
-        , ("X", DSL.ety a)
-        , ("Y", DSL.ety b) ]
-      compOuts =
-        [ ("R", DSL.ety result) ]
-
-    DSL.declaration (entityName <> "_inst_block") $ do
-      DSL.compInBlock entityName compInps compOuts
-
-      let
-        inps =
-          [ ("clk", clk )
-          , ("X", a)
-          , ("Y", b)
-          ]
-
-        outs =
-          [ ("R", result)
-          ]
-
-      DSL.instDecl Empty (Id.unsafeMake entityName) plusFloatInstName
-        [] inps outs
-  | otherwise = error $ ppShow bbCtx
 
 --plusFloatBBTF _ _ = error "qq"
 {-

@@ -9,7 +9,8 @@ module Lexer (
     updateInfoEntity,
     makeListVHDLcomments,
     getLastInfoEntity,
-    processFile
+    processFile,
+    lengthMaybeStrings,
 
 ) where
 
@@ -62,6 +63,9 @@ readLines handle = do
         line <- hGetLine handle
         putStrLn line
         readLines handle
+lengthMaybeStrings :: Maybe [String] -> Int
+lengthMaybeStrings (Just strs) = length strs
+lengthMaybeStrings Nothing       = 0 
 
 isVHDLcomment :: String -> Bool
 isVHDLcomment str  | length str > 2 = if take 2 str == "--" then True else False

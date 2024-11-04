@@ -15,7 +15,7 @@ module Tem (
     args,
     filePath,
     generateBlackBoxFunction,
-    
+    generateTemplateFunction,
     
 ) where
 
@@ -39,6 +39,7 @@ import qualified Clash.Primitives.DSL as DSL
 
 
 import Clash.Annotations.Primitive (Primitive(..))
+import Data.Text (Text, unpack)
 
 
 
@@ -145,3 +146,31 @@ generateBlackBoxFunction baseName = do
 
     -- Return both the type signature and the function definition
     return [funcSig, funcDec]
+
+generateTemplateFunction :: Text -> Int -> Q [Dec]
+generateTemplateFunction entityName lensignal = do
+    let entityNamestr = unpack entityName
+    let tfNamestr = entityNamestr <> "TF"
+    let bbtfNamestr = entityNamestr <> "BBTF"
+    let tfName = mkName tfNamestr
+    let entityNameName = mkName entityNamestr
+    let bbtfName = mkName bbtfNamestr
+    -- Create the function definition
+    let funcDec = FunD tfName 
+            [ Clause [VarP entityNameName] 
+                (NormalB 
+                (AppE 
+                    (AppE
+                        (AppE (ConE 'TemplateFunction) (ListE [LitE (IntegerL (toInteger i) ) | i <- [0..lensignal]])) -- 1st arg
+                        (AppE (VarE 'const ) (ConE 'True)))                                              -- 2nd arg
+                    (AppE (VarE bbtfName) (VarE entityNameName)))                                           -- 3rd arg
+                ) 
+                []
+            ]
+
+    -- Create the type declaration
+    let funcSig = SigD tfName (ForallT [] [ConT ''HasCallStack](AppT (AppT ArrowT  (ConT ''Text)) (ConT ''TemplateFunction)))
+
+    -- Return both the type signature and the function definition
+    return [funcSig, funcDec]
+
