@@ -144,7 +144,8 @@ library
     exposed-modules:  FloPoCoCall,
         Lexer,
         FlopoCo,
-        Help
+        Help,
+        Tem
 
 
     -- Modules included in this library but not exported.

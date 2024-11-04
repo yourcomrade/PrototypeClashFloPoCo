@@ -25,3 +25,5 @@ source-repository-package
 tests: true
 
 
+package ClashFloPoCo
+  executable-dynamic: False

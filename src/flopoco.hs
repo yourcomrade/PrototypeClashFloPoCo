@@ -26,13 +26,15 @@ import Clash.Netlist.Types
 import qualified Clash.Netlist.Types as N
 import qualified Clash.Primitives.DSL as DSL
 
-import Data.Maybe (fromMaybe, isJust)
+import Data.Maybe (fromMaybe, isJust, fromJust)
 
 import qualified FloPoCoCall as FPCC
 import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
-import Help(num, genPipeDep, flopocoPrim)
+import Help( infoEn)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction)
+import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
 import System.IO.Unsafe
@@ -42,15 +44,17 @@ import Debug.Trace (trace, traceShow)
 import Clash.Primitives.Types (Primitive(BlackBoxHaskell, workInfo))
 import Clash.Driver.Bool (OverridingBool(Always))
 import Text.Show.Pretty(ppShow)
-type N = $(num)
+
 
 --type N = 10
 
 -- Type-level version of `num`
 -- numNat :: forall n. KnownNat n => SNat n
 -- numNat = fromInteger num
+type N = $(getPipeDep infoEn)
 xp :: SNat N
 xp = SNat::SNat N
+{-# OPAQUE plusFloat #-}
 plusFloat
   :: forall n . 
   Clock XilinxSystem
@@ -59,7 +63,9 @@ plusFloat
   -> DSignal XilinxSystem (n + N) Float
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
-{-
+
+$(generateBlackBoxFunction (fromJust (name infoEn)))
+
 {-# ANN plusFloat (
     let
       primName = show 'plusFloat
@@ -71,12 +77,12 @@ plusFloat clk a b =
           templateFunction: #{tfName}
           workInfo: Always
       |]) #-}
--}
 
 
-{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
 
-{-# OPAQUE plusFloat #-}
+--{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
+
+
 {-
 data FloatException 
   = ZeroExp
@@ -94,7 +100,7 @@ data FlopocoFloat
 {-# ANN module (DataReprAnn $(liftQ [t|FloatException|]) 34 [ConstrRepr 'FlopocoFloat 0b0 0b0 [3 `shiftL` 32, (1 `shiftL` 32)-1]]) #-}
 -}
 
-
+{-
 
 plusFloatX ::
   Clock XilinxSystem ->
@@ -115,7 +121,7 @@ plusFloatX clk a b =
     valOut = toSignal (delayN xpX False enableGen clk (fromSignal valInp))
   in
     mux valOut (fmap Just yX) (pure Nothing)
-
+-}
 -- Template Haskell Splice to generate entity name
 -- entityNameTH :: String
 -- entityNameTH = $(FloPoCoGen.generateFloPoCoEntity "/home/minh/flopoco/build/bin/flopoco"
@@ -134,7 +140,7 @@ plusFloatX clk a b =
 --   DSignal dom n Float ->
 --   DSignal dom (n+8) Float
 --
-
+{-
 plusFloatBBF :: BlackBoxFunction
 plusFloatBBF _isD _primName _args _resTys = do
   -- Call Flopoco
@@ -150,7 +156,25 @@ plusFloatBBF _isD _primName _args _resTys = do
   --trace (show meta) $ return ()
   --trace (show bb) $ return ()
   pure (Right (meta, bb))
+-}
+{-
+plusFloatBBF :: BlackBoxFunction
+plusFloatBBF _ _ _ _ = do
+  -- Call Flopoco
+  -- do something here to call flopo and get
+  --
 
+  -- let entityName = parseEntityName output
+  let entityName = "plusFloat"
+  
+ 
+  -- Debugging output
+  --trace (show meta) $ return ()
+  --trace (show bb) $ return ()
+  pure (Right ((emptyBlackBoxMeta {bbKind = TDecl}), (BBFunction ("plusFloatTF") 0 (plusFloatTF entityName))))
+-}
+
+-- --$(generateBlackBoxFunction "plusFloat")
 plusFloatTF ::
   HasCallStack =>
   Text ->
@@ -253,7 +277,7 @@ topEntity clk x y z =
   plusFloat clk
     (delayI undefined enableGen clk x)
     (plusFloat clk y z)
-
+{-
 
 topEntity2 ::
   Clock XilinxSystem ->
@@ -267,3 +291,4 @@ topEntity2 clk x y z =
     (plusFloatX clk (fmap Just y) (fmap Just z))
 
 
+-}
