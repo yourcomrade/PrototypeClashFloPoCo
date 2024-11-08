@@ -35,18 +35,18 @@
         },
         {
             "name": "FlopoCo_topEntity_types.vhdl",
-            "sha256": "6c1d2c30b6974e68db0dea4330989eefc12cdff859398f8518fc40eb29bc583f"
+            "sha256": "692aae1700dbdee8c46d594f74ba823681a4bbdb4e8743ab212fb9e7d5343328"
         },
         {
             "name": "topEntity.vhdl",
-            "sha256": "f1d9706c23a9adbca77009c2cba72350f58d5bd2e2e8bb307e4260f4e2397146"
+            "sha256": "04e4bab0b6d8e4685b27f7bf10ee98e08ac407c88628a80dd15d5d871b7206b5"
         }
     ],
     "flags": [
         20,
         20
     ],
-    "hash": "4eb6a843e372b72a65bf4a7044218629cec742a309722d2fac742d69ed333db4",
+    "hash": "0854749ab14c0388c88a69d7f0efd2727a72e2e9dd6aa8bbe895cec21a8237a1",
     "top_component": {
         "name": "topEntity",
         "ports_flat": [
@@ -62,29 +62,29 @@
                 "direction": "in",
                 "is_clock": false,
                 "name": "carg_0",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "type_name": "unsigned(11 downto 0)",
+                "width": 12
             },
             {
                 "direction": "in",
                 "is_clock": false,
                 "name": "carg_1",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "type_name": "unsigned(11 downto 0)",
+                "width": 12
             },
             {
                 "direction": "in",
                 "is_clock": false,
                 "name": "carg_2",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "type_name": "unsigned(11 downto 0)",
+                "width": 12
             },
             {
                 "direction": "out",
                 "is_clock": false,
                 "name": "result",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "type_name": "unsigned(11 downto 0)",
+                "width": 12
             }
         ]
     },

@@ -137,7 +137,7 @@ generateBlackBoxFunction baseName = do
                             )
                         )
                     )
-                     [] 
+                    [] 
             ]
 
     
@@ -173,4 +173,7 @@ generateTemplateFunction entityName lensignal = do
 
     -- Return both the type signature and the function definition
     return [funcSig, funcDec]
+
+--generateBlackBoxTemplateFunction :: String -> InfoEntity -> Q [Dec]
+--generateBlackBoxTemplateFunction entityName infoen = do
 

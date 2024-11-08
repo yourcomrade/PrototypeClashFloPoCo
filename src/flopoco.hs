@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module FlopoCo where
-
+import qualified Prelude as Prelude
 import Clash.Explicit.Prelude
 import Data.String.Interpolate (__i)
 import Clash.Annotations.Primitive (Primitive(..), HDL(..))
@@ -22,7 +22,7 @@ import Clash.Netlist.BlackBox.Types
   (BlackBoxFunction, BlackBoxMeta(..), TemplateKind(..), emptyBlackBoxMeta)
 --import qualified Clash.Netlist.Id as Id
 import Clash.Netlist.Types
-  (BlackBox (..), BlackBoxContext, EntityOrComponent(..), TemplateFunction(..))
+  (BlackBox (..), BlackBoxContext, EntityOrComponent(..), TemplateFunction(..), HWType, bbResults)
 import qualified Clash.Netlist.Types as N
 import qualified Clash.Primitives.DSL as DSL
 
@@ -45,7 +45,16 @@ import Clash.Primitives.Types (Primitive(BlackBoxHaskell, workInfo))
 import Clash.Driver.Bool (OverridingBool(Always))
 import Text.Show.Pretty(ppShow)
 import Lexer (lengthMaybeStrings)
+--import qualified Clash.Netlist.Types as DSL
+import qualified Data.Text as Text
+import Clash.Netlist.BlackBox.Util (bbResult)
 
+type N = $(getPipeDep infoEn)
+
+xp :: SNat N
+xp = SNat::SNat N
+tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
+tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
 plusFloatBBTF ::
   forall s .
   Backend s =>
@@ -61,19 +70,17 @@ plusFloatBBTF  entityName bbCtx
     plusFloatInstName <- Id.makeBasic (entityName <> "_inst")
 
     let
-      compInps =
-        [ ("clk", N.Bit)
-        , ("X", DSL.ety a)
-        , ("Y", DSL.ety b) ]
-      compOuts =
-        [ ("R", DSL.ety result) ]
+      compInps =  Prelude.zip ( maybe [] (L.map Text.pack) (insig infoEn)) (L.map snd (DSL.tInputs bbCtx)) 
+        
+      compOuts = 
+        Prelude.zip (maybe [] (L.map Text.pack) (outsig infoEn)) (L.map snd (tOutputs bbCtx)) 
 
     DSL.declaration (entityName <> "_inst_block") $ do
       DSL.compInBlock entityName compInps compOuts
 
       let
         inps =
-          [ ("clk", clk )
+          [ ("clk", clk)
           , ("X", a)
           , ("Y", b)
           ]
@@ -84,23 +91,33 @@ plusFloatBBTF  entityName bbCtx
 
       DSL.instDecl Empty (Id.unsafeMake entityName) plusFloatInstName
         [] inps outs
-  | otherwise = error $ ppShow bbCtx
+
+
+  | otherwise = error ( ppShow bbCtx)
 --type N = 10
 
 -- Type-level version of `num`
 -- numNat :: forall n. KnownNat n => SNat n
 -- numNat = fromInteger num
-type N = $(getPipeDep infoEn)
 
-xp :: SNat N
-xp = SNat::SNat N
 {-# OPAQUE plusFloat #-}
+
+{-
 plusFloat
   :: forall n . 
   Clock XilinxSystem
   -> DSignal XilinxSystem n Float
   -> DSignal XilinxSystem n Float
   -> DSignal XilinxSystem (n + N) Float
+plusFloat clk a b =
+  delayN xp undefined enableGen clk (liftA2 (+) a b)
+  -}
+plusFloat
+  :: forall n .
+  Clock XilinxSystem
+  -> DSignal XilinxSystem n (Unsigned 12)
+  -> DSignal XilinxSystem n  (Unsigned 12)
+  -> DSignal XilinxSystem (n + N)  (Unsigned 12)
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
 $(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
@@ -119,7 +136,6 @@ $(generateBlackBoxFunction (fromJust (name infoEn)))
       |]) #-}
 
 -}
-
 {-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
 
 
@@ -274,10 +290,10 @@ plusFloatBBTF entityName bbCtx
 -}
 topEntity ::
   Clock XilinxSystem ->
-  DSignal XilinxSystem 0 Float ->
-  DSignal XilinxSystem 0 Float ->
-  DSignal XilinxSystem 0 Float ->
-  DSignal XilinxSystem (0 + N + N) Float
+  DSignal XilinxSystem 0 (Unsigned 12) ->
+  DSignal XilinxSystem 0 (Unsigned 12) ->
+  DSignal XilinxSystem 0 (Unsigned 12) ->
+  DSignal XilinxSystem (0 + N + N) (Unsigned 12)
 topEntity clk x y z =
   plusFloat clk
     (delayI undefined enableGen clk x)

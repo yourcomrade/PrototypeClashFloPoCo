@@ -10,32 +10,31 @@ use work.FlopoCo_topEntity_types.all;
 entity topEntity is
   port(-- clock
        carg   : in FlopoCo_topEntity_types.clk_XilinxSystem;
-       carg_0 : in std_logic_vector(31 downto 0);
-       carg_1 : in std_logic_vector(31 downto 0);
-       carg_2 : in std_logic_vector(31 downto 0);
-       result : out std_logic_vector(31 downto 0));
+       carg_0 : in unsigned(11 downto 0);
+       carg_1 : in unsigned(11 downto 0);
+       carg_2 : in unsigned(11 downto 0);
+       result : out unsigned(11 downto 0));
 end;
 
 architecture structural of topEntity is
-  signal \c$app_arg\   : std_logic_vector(31 downto 0);
-  signal \c$app_arg_0\ : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_1      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_2      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_3      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_4      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_5      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_6      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_7      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_8      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
-  signal result_9      : std_logic_vector(31 downto 0) := (std_logic_vector'(0 to 31 => '-'));
+  signal \c$app_arg\   : unsigned(11 downto 0);
+  signal \c$app_arg_0\ : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_1      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_2      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_3      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_4      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_5      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_6      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_7      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_8      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
+  signal result_9      : unsigned(11 downto 0) := (unsigned'(0 to 11 => '-'));
 
 begin
   plusFloat_inst_block : block
     component plusFloat port
-      ( clk : in std_logic
-      ; X : in std_logic_vector(31 downto 0)
-      ; Y : in std_logic_vector(31 downto 0)
-      ; R : out std_logic_vector(31 downto 0) );
+      ( X : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ; Y : in unsigned(11 downto 0)
+      ; R : out unsigned(11 downto 0) );
     end component;
   begin
     plusFloat_inst : plusFloat
@@ -140,10 +139,9 @@ begin
 
   plusFloat_inst_block_0 : block
     component plusFloat port
-      ( clk : in std_logic
-      ; X : in std_logic_vector(31 downto 0)
-      ; Y : in std_logic_vector(31 downto 0)
-      ; R : out std_logic_vector(31 downto 0) );
+      ( X : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ; Y : in unsigned(11 downto 0)
+      ; R : out unsigned(11 downto 0) );
     end component;
   begin
     plusFloat_inst_0 : plusFloat
