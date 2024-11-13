@@ -32,7 +32,8 @@ architecture structural of topEntity is
 begin
   plusFloat_inst_block : block
     component plusFloat port
-      ( X : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ( clk : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ; X : in unsigned(11 downto 0)
       ; Y : in unsigned(11 downto 0)
       ; R : out unsigned(11 downto 0) );
     end component;
@@ -139,7 +140,8 @@ begin
 
   plusFloat_inst_block_0 : block
     component plusFloat port
-      ( X : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ( clk : in FlopoCo_topEntity_types.clk_XilinxSystem
+      ; X : in unsigned(11 downto 0)
       ; Y : in unsigned(11 downto 0)
       ; R : out unsigned(11 downto 0) );
     end component;

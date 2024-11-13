@@ -77,6 +77,9 @@ getVHDLComment str | length str > 2 = if take 2 str == "--" then Just $ drop 2 s
 containsSpace :: String -> Bool
 containsSpace str = any isSpace str
 
+containsPort :: String -> Bool
+containsPort str = "port (" `L.isInfixOf` str || "port(" `L.isInfixOf` str
+
 afterColon :: Maybe [String] -> Maybe [String]
 afterColon Nothing = Nothing
 afterColon (Just wordList) =
@@ -116,9 +119,25 @@ getLastInfoEntity :: Maybe [String] -> Maybe InfoEntity -> Maybe InfoEntity
 getLastInfoEntity (Just []) (Just infoen) = Just infoen
 getLastInfoEntity (Just (x:vhdlcomments)) (Just infoen) = getLastInfoEntity (Just vhdlcomments) (updateInfoEntity x (Just infoen))
 
-
+-- Function to extract words after 'port (' and before ':'
+extractPortNamespartial :: String -> [String]
+extractPortNamespartial input =
+   let -- Skip leading whitespace before "port ("
+      trimmedInput = dropWhile (== ' ') input
+      -- Check if the remaining string starts with "port ("
+      afterPort = if "port (" `L.isPrefixOf` trimmedInput
+                  then drop (length ("port (" :: String)) trimmedInput
+                  else ""
+      -- Take everything before the first occurrence of ':'
+      beforeColon = takeWhile (/= ':') afterPort
+      -- Replace commas with spaces to split names correctly
+      names = words (map (\c -> if c == ',' then ' ' else c) beforeColon)
+  in names 
 convertMaybeToInt :: Maybe Int -> Int
 convertMaybeToInt = fromMaybe 0
+
+updateInputPortInfoEntity :: Maybe [String] -> InfoEntity -> InfoEntity
+updateInputPortInfoEntity inp infoen = infoen {insig = inp}
 
 processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m (Maybe InfoEntity)
 processFile process path = do
@@ -133,11 +152,20 @@ processFile process path = do
     -- Apply the processing function
     let result = process (makeListVHDLcomments contents) (Just initialEntity)
 
+    let partialPortInputs = extractPortNamespartial(last (filter containsPort (lines contents)) )
     -- Process the result and return an Int
 
     liftIO $ print result
     liftIO $ hClose handle  -- Close the file handle
-    return result
+    case result of
+        Just info -> do     
+            let inports = insig info       
+            let updateinports = fmap (partialPortInputs ++) inports
+            let info1 = updateInputPortInfoEntity updateinports info
+    	    liftIO $ print info1
+            return  (Just info1)
+        Nothing   -> return Nothing
+    
 
 
 

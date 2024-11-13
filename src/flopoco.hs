@@ -33,7 +33,7 @@ import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
 import Help( infoEn)
-import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
@@ -44,7 +44,7 @@ import Debug.Trace (trace, traceShow)
 import Clash.Primitives.Types (Primitive(BlackBoxHaskell, workInfo))
 import Clash.Driver.Bool (OverridingBool(Always))
 import Text.Show.Pretty(ppShow)
-import Lexer (lengthMaybeStrings)
+
 --import qualified Clash.Netlist.Types as DSL
 import qualified Data.Text as Text
 import Clash.Netlist.BlackBox.Util (bbResult)
@@ -55,6 +55,7 @@ xp :: SNat N
 xp = SNat::SNat N
 tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
 tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
+{-
 plusFloatBBTF ::
   forall s .
   Backend s =>
@@ -67,15 +68,18 @@ plusFloatBBTF  entityName bbCtx
   , [result] <- DSL.tResults bbCtx
   = do
 
-    plusFloatInstName <- Id.makeBasic (entityName <> "_inst")
+    plusFloatInstName <- Id.makeBasic "plusfloat_inst"
 
     let
-      compInps =  Prelude.zip ( maybe [] (L.map Text.pack) (insig infoEn)) (L.map snd (DSL.tInputs bbCtx)) 
+      compInps =  [ ("clk", N.Bit)
+        , ("X", DSL.ety a)
+        , ("Y", DSL.ety b) ]
+        --Prelude.zip ( maybe [] (L.map Text.pack) (insig infoEn)) (L.map snd (DSL.tInputs bbCtx)) 
         
       compOuts = 
-        Prelude.zip (maybe [] (L.map Text.pack) (outsig infoEn)) (L.map snd (tOutputs bbCtx)) 
+        --Prelude.zip (maybe [] (L.map Text.pack) (outsig infoEn)) [DSL.ety result] 
 
-    DSL.declaration (entityName <> "_inst_block") $ do
+    DSL.declaration "plusfloat_inst_block" $ do
       DSL.compInBlock entityName compInps compOuts
 
       let
@@ -94,6 +98,7 @@ plusFloatBBTF  entityName bbCtx
 
 
   | otherwise = error ( ppShow bbCtx)
+-}
 --type N = 10
 
 -- Type-level version of `num`
@@ -120,6 +125,7 @@ plusFloat
   -> DSignal XilinxSystem (n + N)  (Unsigned 12)
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
+$(generateBlackBoxTemplateFunction infoEn)
 $(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
 $(generateBlackBoxFunction (fromJust (name infoEn)))
 {-
