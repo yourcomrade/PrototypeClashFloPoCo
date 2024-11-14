@@ -14,9 +14,12 @@ module Tem (
     floPoCoPath,
     args,
     filePath,
+    args2,
+    filePath2,
     generateBlackBoxFunction,
     generateTemplateFunction,
     generateBlackBoxTemplateFunction,
+    generateBlackBox,
     
     
 ) where
@@ -45,14 +48,16 @@ import Data.Text (Text, unpack)
 import Control.Monad.State.Lazy (State)
 import Text.Show.Pretty(ppShow)
 import Data.Char (toLower)
+import Data.Maybe (fromMaybe)
 
 
 floPoCoPath = "/home/minh/flopoco/build/bin/flopoco"
-args = ["frequency=300", "target=Zynq7000", "IEEEFPAdd", "wE=8", "wF=23","name=plusFloat", "registerLargeTables=1"]
-filePath = "flopoco.vhdl"
+args = ["frequency=300", "target=Zynq7000", "FPAdd", "wE=8", "wF=23","name=plusFloat", "outputFile=flopocoAdd.vhdl","registerLargeTables=1"]
+filePath = "flopocoAdd.vhdl"
 
 
-
+args2 = ["frequency=300", "target=Zynq7000", "FPMult", "wE=8", "wF=23","name=multFloat", "outputFile=flopocoMult.vhdl","registerLargeTables=1"]
+filePath2 = "flopocoMult.vhdl"
 
 getPipeDep:: InfoEntity -> Q Type
 
@@ -141,8 +146,7 @@ generateBlackBoxFunction baseName = do
                             )
                         )
                     )
-                    [] 
-            ]
+                    []]
 
     
     -- Create the function signature for the black box function
@@ -318,69 +322,200 @@ generateBlackBoxTemplateFunction infoen = do
 
     return [funSig, funDec]
 
-{-
-    let funcDec = FunD bbtfName
-        [Clause
-            [VarP entityNameName, VarP bbCtx]
-            (GuardedB [
-                (PatG [
-                    -- Binding inputs
-                    BindS (ListP [VarP x | x <- inputNamesList])
-                            (AppE (AppE (VarE GHC.Base.map) (VarE Data.Tuple.fst))
-                                (AppE (VarE Clash.Primitives.DSL.tInputs) (VarE bbCtx))),
-                    BindS (ListP [VarP r | r <- outputNamesList])
-                            (AppE (VarE Clash.Primitives.DSL.tResults) (VarE bbCtx))
-                    ], 
-                DoE Nothing [
-                    -- Naming instance
-                    BindS (VarP entityNameInstName)
-                            (AppE (VarE Clash.Netlist.Id.makeBasic) (Just (LitE (StringL entityNameInst))) ),
+generateBlackBox:: InfoEntity -> Q [Dec]
+generateBlackBox infoen = do
+    let entityNameNamestr = "entityName"
+    let entityNameName = mkName entityNameNamestr
+    let entityNamestr = fromMaybe "" (name infoen)
+    let entityName = mkName entityNamestr
 
-                    -- Defining component inputs and outputs
-                    LetS [
-                            ValD (VarP compInps) (NormalB
-                                    (AppE (AppE (VarE GHC.List.zip)
-                                            (ListE [LitE (StringL x ) | x <- inputNamesListstr]))
-                                    (AppE (AppE (VarE GHC.Base.map) (VarE Data.Tuple.snd))
-                                            (AppE (VarE Clash.Primitives.DSL.tInputs) (VarE bbCtx)))))
-                            [],
-                        ValD (VarP compOuts) (NormalB
-                            (ListE [TupE [Just (LitE (StringL "R")), Just (AppE (ConE Clash.Netlist.Types.Unsigned) (LitE (IntegerL 12)))]]))
-                            []
-                        ],
+    let inputNamesListstr = fromMaybe [] (insig infoen)
+    let outputNamesListstr = fromMaybe [] (outsig infoen)
+    let inputNamesList = map mkName  ( toLowercaseList inputNamesListstr)
+    let outputNamesList = map mkName (toLowercaseList outputNamesListstr)
+   
+    let bbfNamestr = entityNamestr <> "BBF"
+    let bbfName = mkName bbfNamestr
+    let tfNamestr = entityNamestr <> "TF"
+    let tfName = mkName tfNamestr
+    let bbtfNamestr = entityNamestr <> "BBTF"
+    let bbtfName = mkName bbtfNamestr
 
-                    -- Compiling the block
-                    NoBindS (InfixE
-                        (Just (AppE (VarE Clash.Primitives.DSL.declaration) (Just (LitE (StringL entityNameInstBlockstr))) ))
-                        (VarE GHC.Base.$)
-                        (Just (DoE Nothing [
-                            NoBindS (AppE (AppE (AppE (VarE Clash.Primitives.DSL.compInBlock)
-                                                (VarE entityNameInstName))
+
+    let entityNameInststr = entityNamestr <> "_inst"
+    let entityNameInst = mkName entityNameInststr
+    let entityNameInstBlockstr = entityNamestr <> "_inst_block"
+    let entityNameInstBlock = mkName  entityNameInstBlockstr
+    let entityNameInstNamestr = entityNamestr <> "InstName"
+    let entityNameInstName = mkName entityNameInstNamestr
+
+    let compInps = mkName "compInps"
+    let compOuts = mkName "compOuts"
+
+    let inps = mkName "inps"
+    let outs = mkName "outs"
+    let bbCtx = mkName "bbCtx"
+    let s = mkName "s"
+
+   
+
+    let lensignal = lengthMaybeStrings (insig infoen)
+    -- Create BlackBoxTemplateFunction definition declaration
+    let bbtffunDec
+         = FunD
+            bbtfName
+             [Clause
+                [VarP entityNameName, VarP bbCtx]
+                (GuardedB
+                   [(PatG
+                       [BindS
+                          (ListP [VarP x | x <- inputNamesList])
+                          (AppE
+                             (AppE (VarE 'Prelude.map) (VarE 'Prelude.fst))
+                             (AppE (VarE 'DSL.tInputs) (VarE bbCtx))),
+                        BindS
+                          (ListP [VarP r | r <- outputNamesList])
+                          (AppE (VarE 'DSL.tResults) (VarE bbCtx))], 
+                     DoE
+                       Nothing
+                       [BindS
+                          (VarP entityNameInstName)
+                          (AppE (VarE 'Id.makeBasic) (LitE (StringL entityNameInststr))),
+                        LetS
+                          [ValD
+                             (VarP compInps)
+                             (NormalB
+                                (ListE
+                                   [TupE
+                                      [Just (LitE (StringL x)),
+                                       Just (AppE (VarE 'DSL.ety) (VarE y))] |
+                                      (x, y) <- zip inputNamesListstr inputNamesList]))
+                             [],
+                           ValD
+                             (VarP compOuts)
+                             (NormalB
+                                (ListE
+                                   [TupE
+                                      [Just (LitE (StringL x)),
+                                       Just (AppE (VarE 'DSL.ety) (VarE y))] |
+                                      (x, y) <- zip outputNamesListstr outputNamesList]))
+                             []],
+                        NoBindS
+                          (InfixE
+                             (Just
+                                (AppE
+                                   (VarE 'DSL.declaration) (LitE (StringL entityNameInstBlockstr))))
+                             (VarE '($))
+                             (Just
+                                (DoE
+                                   Nothing
+                                   [NoBindS
+                                      (AppE
+                                         (AppE
+                                            (AppE (VarE 'DSL.compInBlock) (VarE entityNameName))
                                             (VarE compInps))
-                                    VarE compOuts),
-                        LetS [
-                            ValD (VarP inps) (NormalB (ListE [ TupE [Just (LitE (StringL x)), Just (VarE y) ] | x <- inputNamesListstr, y <- inputNamesList])) [],
-                            ValD (VarP outs) (NormalB (ListE [TupE [Just (LitE (StringL x)), Just (VarE y) ] | x <- outputNamesListstr, y <- outputNamesList ])) []
-                        ],
-                        NoBindS (AppE (AppE (AppE (AppE (AppE (AppE (VarE Clash.Primitives.DSL.instDecl)
-                                                                 (ConE Clash.Netlist.Types.Empty))
-                                                        (AppE (VarE Clash.Netlist.Id.unsafeMake) (VarE entityNameName)))
+                                         (VarE compOuts)),
+                                    LetS
+                                      [ValD
+                                         (VarP inps)
+                                         (NormalB
+                                            (ListE
+                                               [TupE [Just (LitE (StringL x)), Just (VarE y)] |
+                                                  (x, y) <- Prelude.zip
+                                                              inputNamesListstr inputNamesList]))
+                                         [],
+                                       ValD
+                                         (VarP outs)
+                                         (NormalB
+                                            (ListE
+                                               [TupE [Just (LitE (StringL x)), Just (VarE y)] |
+                                                  (x, y) <- Prelude.zip
+                                                              outputNamesListstr outputNamesList]))
+                                         []],
+                                    NoBindS
+                                      (AppE
+                                         (AppE
+                                            (AppE
+                                               (AppE
+                                                  (AppE
+                                                     (AppE (VarE 'DSL.instDecl) (ConE 'N.Empty))
+                                                     (AppE
+                                                        (VarE 'Id.unsafeMake)
+                                                        (VarE entityNameName)))
                                                   (VarE entityNameInstName))
-                                            (ConE GHC.Types.[]))
-                                      (VarE inps))
-                                  (VarE outs))
-                                    ])))
-                        ]),
+                                               (ConE '[]))
+                                            (VarE inps))
+                                         (VarE outs))])))]),
+                    (NormalG (VarE 'otherwise), 
+                     AppE
+                       (VarE 'error)
+                       (AppE (VarE 'Text.Show.Pretty.ppShow) (VarE bbCtx)))])
+                []]
+    
+    -- Create BlackBoxTemplateFunction signature declaration 
+    let bbtffunSig
+         = SigD
+             bbtfName
+             (ForallT
+                [PlainTV s SpecifiedSpec]
+                [AppT (ConT ''Clash.Backend.Backend) (VarT s)]
+                (AppT
+                   (AppT ArrowT (ConT ''Text))
+                   (AppT
+                      (AppT ArrowT (ConT ''Clash.Netlist.Types.BlackBoxContext))
+                      (AppT
+                         (AppT (ConT ''State) (VarT s))
+                         (ConT ''Data.Text.Prettyprint.Doc.Extra.Doc)))))    
+    -- Create TemplateFunction definition declaration
+    let tffuncDec = FunD tfName 
+            [ Clause [VarP entityNameName] 
+                (NormalB 
+                (AppE 
+                    (AppE
+                        (AppE (ConE 'TemplateFunction) (ListE [LitE (IntegerL (toInteger i) ) | i <- [0..lensignal]])) -- 1st arg
+                        (AppE (VarE 'const ) (ConE 'True)))                                              -- 2nd arg
+                    (AppE (VarE bbtfName) (VarE entityNameName)))                                           -- 3rd arg
+                ) 
+                []
+            ]
 
-            -- Error handler if the pattern match fails
-            (NormalG (VarE GHC.Base.otherwise),
-             InfixE (Just (VarE GHC.Err.error))
-                    (VarE GHC.Base.$)
-                    (Just (AppE (VarE Text.Show.Pretty.ppShow) (VarE bbCtx)))) 
-            ])
-            []
-        ]
+    -- Create TemplateFunction signature declaration
+    let tffuncSig = SigD tfName (ForallT [] [ConT ''HasCallStack](AppT (AppT ArrowT  (ConT ''Text)) (ConT ''TemplateFunction)))
+    -- Create BlackBoxFunction definition declaration
+    let bbffuncDec = FunD bbfName  
+            [ Clause [WildP, WildP, WildP, WildP] 
+                     (NormalB
+                        (AppE
+                            (VarE 'pure)
+                            (AppE
+                                (ConE 'Right)
+                                (TupE
+                                    [ 
+                                    
+                                    Just (RecUpdE (VarE 'emptyBlackBoxMeta) [('bbKind, ConE 'TDecl)])
+                                    ,Just 
+                                    (AppE   
+                                        (AppE
+                                            (AppE (ConE 'BBFunction) (LitE (StringL tfNamestr ))) -- 1st arg
+                                            (LitE (IntegerL 0)))                                  -- 2nd arg
+                                            (AppE (VarE tfName) (LitE (StringL entityNamestr))))     -- 3rd arg
+                                    ]
+                                )
+                            )
+                        )
+                    )
+                    []]
 
--}
+    
+    -- Create the function signature for the black box function
+    let bbffuncSig = SigD bbfName (ConT ''BlackBoxFunction) -- Adjust the type to match the function signature
+    
+    return [bbtffunSig, bbtffunDec, tffuncSig, tffuncDec, bbffuncSig, bbffuncDec]
+
+
+
+
+
+
 
 

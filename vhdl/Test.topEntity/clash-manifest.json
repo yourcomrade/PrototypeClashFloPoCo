@@ -1,0 +1,106 @@
+{
+    "components": [
+        "topEntity"
+    ],
+    "dependencies": {
+        "transitive": []
+    },
+    "domains": {
+        "IntelSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "System": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "XilinxSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Synchronous",
+            "reset_polarity": "ActiveHigh"
+        }
+    },
+    "files": [
+        {
+            "name": "topEntity.sdc",
+            "sha256": "c8f553d0b52582658a3f05c915cf3e923a8cddbc3792ed01ebd8aa1dc1fd87cf"
+        },
+        {
+            "name": "Test_topEntity_types.vhdl",
+            "sha256": "456f63778d00fddd95b229c024bbc16b2c3c3bb7b114a06bdb1cc216b477081f"
+        },
+        {
+            "name": "topEntity.vhdl",
+            "sha256": "9efb96809b912eec524fd19fbbe1a868abcfacb63b380c3c5f381520cda71364"
+        }
+    ],
+    "flags": [
+        20,
+        20
+    ],
+    "hash": "8345595f77da64ba50de91b4f6e3c7fd43f551584b4b33840ebf85d2754e8844",
+    "top_component": {
+        "name": "topEntity",
+        "ports_flat": [
+            {
+                "direction": "in",
+                "domain": "XilinxSystem",
+                "is_clock": true,
+                "name": "carg",
+                "type_name": "carg.Test_topEntity_types.clk_XilinxSystem",
+                "width": 1
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_0",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_1",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_2",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_3",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            },
+            {
+                "direction": "in",
+                "is_clock": false,
+                "name": "carg_4",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            },
+            {
+                "direction": "out",
+                "is_clock": false,
+                "name": "result",
+                "type_name": "std_logic_vector(33 downto 0)",
+                "width": 34
+            }
+        ]
+    },
+    "version": "unstable"
+}

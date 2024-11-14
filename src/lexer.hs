@@ -162,7 +162,7 @@ processFile process path = do
             let inports = insig info       
             let updateinports = fmap (partialPortInputs ++) inports
             let info1 = updateInputPortInfoEntity updateinports info
-    	    liftIO $ print info1
+            liftIO $ print info1
             return  (Just info1)
         Nothing   -> return Nothing
     

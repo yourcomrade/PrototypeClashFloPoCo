@@ -32,8 +32,8 @@ import qualified FloPoCoCall as FPCC
 import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
-import Help( infoEn)
-import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction)
+import Help( infoEn, infoEn2)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBox)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
@@ -50,9 +50,12 @@ import qualified Data.Text as Text
 import Clash.Netlist.BlackBox.Util (bbResult)
 
 type N = $(getPipeDep infoEn)
-
+type N2 = $(getPipeDep infoEn2)
 xp :: SNat N
 xp = SNat::SNat N
+
+xp2 :: SNat N2
+xp2 = SNat::SNat N2
 tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
 tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
 {-
@@ -120,14 +123,15 @@ plusFloat clk a b =
 plusFloat
   :: forall n .
   Clock XilinxSystem
-  -> DSignal XilinxSystem n (Unsigned 12)
-  -> DSignal XilinxSystem n  (Unsigned 12)
-  -> DSignal XilinxSystem (n + N)  (Unsigned 12)
+  -> DSignal XilinxSystem n (BitVector 34)
+  -> DSignal XilinxSystem n  (BitVector 34)
+  -> DSignal XilinxSystem (n + N)  (BitVector 34)
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
-$(generateBlackBoxTemplateFunction infoEn)
-$(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
-$(generateBlackBoxFunction (fromJust (name infoEn)))
+$(generateBlackBox infoEn)
+-- --$(generateBlackBoxTemplateFunction infoEn)
+-- --$(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
+-- --$(generateBlackBoxFunction (fromJust (name infoEn)))
 {-
 {-# ANN plusFloat (
     let
@@ -143,8 +147,17 @@ $(generateBlackBoxFunction (fromJust (name infoEn)))
 
 -}
 {-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
-
-
+{-# OPAQUE multFloat #-}
+multFloat
+  :: forall n .
+  Clock XilinxSystem
+  -> DSignal XilinxSystem n (BitVector 34)
+  -> DSignal XilinxSystem n  (BitVector 34)
+  -> DSignal XilinxSystem (n + N2)  (BitVector 34)
+multFloat clk a b =
+  delayN xp2 undefined enableGen clk (liftA2 (*) a b)
+$(generateBlackBox infoEn2)
+{-# ANN multFloat (flopocoPrim 'multFloat 'multFloatBBF) #-}
 {-
 data FloatException 
   = ZeroExp
@@ -294,6 +307,7 @@ plusFloatBBTF entityName bbCtx
         [] inps outs
   | otherwise = error $ ppShow bbCtx
 -}
+{-
 topEntity ::
   Clock XilinxSystem ->
   DSignal XilinxSystem 0 (Unsigned 12) ->
@@ -304,6 +318,7 @@ topEntity clk x y z =
   plusFloat clk
     (delayI undefined enableGen clk x)
     (plusFloat clk y z)
+-}
 {-
 
 topEntity2 ::
