@@ -34,19 +34,15 @@
             "sha256": "13d4c1aafcc09a84d81d3b60d513cb901384a10e27e5a5a16572a600f15895f3"
         },
         {
-            "name": "VGAtopEntity_types.vhdl",
-            "sha256": "52ac52d683fa258f1dfd6d9123147d252907f0ee09e302d599ab75eb58e7a338"
-        },
-        {
-            "name": "VGAtopEntity.vhdl",
-            "sha256": "6ed8be241c1f68fa39a1a12a8c18e8fa56c19cef2c45fef698af2fc8d1e8b15d"
+            "name": "VGAtopEntity.v",
+            "sha256": "d39ba59545cc8ce98c134bb5f4f4f3a7e4bac516f309a3388c5f2d004dc79ccc"
         }
     ],
     "flags": [
         20,
         20
     ],
-    "hash": "b4a8e9738914c876a682dcd449ddf7808ff1361f4df1a044464b7b91093fb297",
+    "hash": "e226c6602831310d286d247dac67b2cccb21d389150180fa8a61d066820e225b",
     "top_component": {
         "name": "VGAtopEntity",
         "ports_flat": [
@@ -55,7 +51,7 @@
                 "domain": "XilinxSystem",
                 "is_clock": true,
                 "name": "clk",
-                "type_name": "clk.VGAtopEntity_types.clk_XilinxSystem",
+                "type_name": "",
                 "width": 1
             },
             {
@@ -63,7 +59,7 @@
                 "domain": "XilinxSystem",
                 "is_clock": false,
                 "name": "rst",
-                "type_name": "rst.VGAtopEntity_types.rst_XilinxSystem",
+                "type_name": "",
                 "width": 1
             },
             {
@@ -71,35 +67,35 @@
                 "domain": "XilinxSystem",
                 "is_clock": false,
                 "name": "en",
-                "type_name": "en.VGAtopEntity_types.en_XilinxSystem",
+                "type_name": "",
                 "width": 1
             },
             {
                 "direction": "in",
                 "is_clock": false,
                 "name": "sw",
-                "type_name": "std_logic_vector(11 downto 0)",
+                "type_name": "[11:0]",
                 "width": 12
             },
             {
                 "direction": "out",
                 "is_clock": false,
                 "name": "hsync",
-                "type_name": "std_logic",
+                "type_name": "",
                 "width": 1
             },
             {
                 "direction": "out",
                 "is_clock": false,
                 "name": "vsync",
-                "type_name": "std_logic",
+                "type_name": "",
                 "width": 1
             },
             {
                 "direction": "out",
                 "is_clock": false,
                 "name": "rgb",
-                "type_name": "std_logic_vector(11 downto 0)",
+                "type_name": "[11:0]",
                 "width": 12
             }
         ]

@@ -19,6 +19,7 @@ module Tem (
     generateBlackBoxFunction,
     generateTemplateFunction,
     generateBlackBoxTemplateFunction,
+    generateBlackBoxTemplateFunctionProd,
     generateBlackBox,
     
     
@@ -198,7 +199,7 @@ generateBlackBoxTemplateFunction infoen = do
     let entityNameName = mkName (entityNamestr)
     let bbtfName = mkName (entityNamestr <> "BBTF")
     let entityNameInststr = (entityNamestr <> "_inst")
-    let entityNameInst = mkName entityNameInststr
+    let entityNameInst = mkName entityNameInststr 
     let entityNameInstBlockstr = (entityNamestr <> "_inst_block")
     let entityNameInstBlock = mkName  entityNameInstBlockstr
     let entityNameInstNamestr = (entityNamestr <> "InstName")
@@ -514,8 +515,143 @@ generateBlackBox infoen = do
 
 
 
+generateBlackBoxTemplateFunctionProd :: InfoEntity -> Q [Dec]
+generateBlackBoxTemplateFunctionProd infoen = do
+   let entityNameNamestr = "entityName"
+   let entityNameName = mkName entityNameNamestr 
+   let entityNamestr = fromMaybe "" (name infoen)
+   let entityName = mkName entityNamestr
+
+   let inputNamesListstr = fromMaybe [] (insig infoen )
+   let outputNamesListstr = fromMaybe [] (outsig infoen)
+   let inputNamesList = map mkName  ( toLowercaseList inputNamesListstr)
+   let outputNamesList = map mkName (toLowercaseList outputNamesListstr)
+   
+   let bbfNamestr = entityNamestr <> "BBF"
+   let bbfName = mkName bbfNamestr
+   let tfNamestr = entityNamestr <> "TF"
+   let tfName = mkName tfNamestr
+   let bbtfNamestr = entityNamestr <> "BBTF"
+   let bbtfName = mkName bbtfNamestr
 
 
+   let entityNameInststr = entityNamestr <> "_inst"
+   let entityNameInst = mkName entityNameInststr
+   let entityNameInstBlockstr = entityNamestr <> "_inst_block"
+   let entityNameInstBlock = mkName  entityNameInstBlockstr
+   let entityNameInstNamestr = entityNamestr <> "InstName"
+   let entityNameInstName = mkName entityNameInstNamestr 
 
+   let compInps = mkName "compInps"
+   let compOuts = mkName "compOuts"
 
+   let inps = mkName "inps"
+   let outs = mkName "outs"
+   let bbCtx = mkName "bbCtx" 
+   let s = mkName "s"
+   let result = mkName "result"
+   let resTyps = mkName "resTyps"
+   let declares = mkName "declares"
+   let outname = mkName "name"
+   let typ = mkName "typ"
 
+   let bbtffunDec =FunD bbtfName [Clause [VarP entityName,VarP bbCtx] (GuardedB [(PatG [BindS (ListP [VarP x | x <- inputNamesList]) (AppE (AppE (VarE 'Prelude.map) (VarE 'Prelude.fst)) (AppE (VarE 'DSL.tInputs) (VarE bbCtx))),BindS (ListP [VarP result]) (AppE (VarE 'DSL.tResults) (VarE bbCtx)),BindS (ConP 'N.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))],DoE Nothing [BindS (VarP entityNameInstName) (AppE (VarE 'Id.makeBasic) (LitE (StringL entityNameInststr))),LetS [ValD (VarP compInps) (NormalB (ListE [TupE [Just (LitE (StringL x)),Just (AppE (VarE 'DSL.ety) (VarE y))]| (x,y) <- zip inputNamesListstr inputNamesList])) [],ValD (VarP compOuts) (NormalB (AppE (AppE (VarE 'Prelude.zip) (ListE [LitE (StringL x)| x <- outputNamesListstr])) (VarE resTyps))) []],NoBindS (InfixE (Just (AppE (AppE (VarE 'DSL.declarationReturn) (VarE bbCtx)) (LitE (StringL entityNameInstBlockstr)))) (VarE '($)) (Just (DoE Nothing [BindS (VarP declares) (AppE (AppE (VarE 'Prelude.mapM) (LamE [TupP [VarP outname,VarP typ]] (AppE (AppE (VarE 'DSL.declare) (VarE outname)) (VarE typ)))) (AppE (AppE (VarE 'Prelude.zip) (ListE [LitE (StringL x)| x <- outputNamesListstr])) (VarE resTyps))),LetS [ValD (ListP [VarP x| x <- outputNamesList]) (NormalB (VarE declares)) []],LetS [ValD (VarP inps) (NormalB (ListE [TupE [Just (LitE (StringL x)),Just (VarE y)]| (x,y) <- zip inputNamesListstr inputNamesList])) [],ValD (VarP outs) (NormalB (ListE [TupE [Just (LitE (StringL x)),Just (VarE y)]| (x,y) <- zip outputNamesListstr outputNamesList])) []], NoBindS (AppE (AppE (AppE (VarE 'DSL.compInBlock) (VarE entityName)) (VarE compInps)) (VarE compOuts)),NoBindS (AppE (AppE (AppE (AppE (AppE (AppE (VarE 'DSL.instDecl) (ConE 'Clash.Netlist.Types.Empty)) (AppE (VarE 'Id.unsafeMake) (VarE entityName))) (VarE entityNameInstName)) (ConE '[])) (VarE inps)) (VarE outs)),NoBindS (AppE (VarE 'pure) (ListE [AppE (AppE (VarE 'DSL.constructProduct) (AppE (VarE 'DSL.ety) (VarE result))) (ListE [VarE x| x <- outputNamesList])]))])))]),(NormalG (VarE 'otherwise),AppE (VarE 'error) (AppE (VarE 'ppShow) (VarE bbCtx)))]) []] 
+   {-
+   let bbtffunDec =  FunD
+      bbtfName
+      [Clause
+         [VarP entityName, VarP bbCtx]
+         (GuardedB
+            [(PatG 
+               [BindS (ListP [VarP x | x <- inputNamesList]) (AppE (AppE (VarE 'Prelude.map) (VarE 'Prelude.fst)) (AppE (VarE 'DSL.tInputs) (VarE bbCtx))),
+               BindS (ListP [VarP result]) (AppE (VarE 'DSL.tResults) (VarE bbCtx)),
+               BindS (ConP 'N.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))], 
+               DoE
+                  Nothing g
+                  [BindS
+                     (VarP entityNameInstName)
+                     (AppE (VarE 'Id.makeBasic) (LitE (StringL entityNameInststr))),
+                  LetS
+                     [ValD
+                        (VarP compInps)
+                        (NormalB
+                        (ListE
+                           [TupE ... | (x, y) <- zip inputNamesListstr inputNamesList]))
+                     [],
+                     ValD
+                        (VarP compOuts)
+                        (NormalB
+                        (AppE
+                           (AppE
+                              (VarE 'zip) (ListE [LitE (StringL x) | x <- outputNamesListstr]))
+                           (VarE resTyps)))
+                     []],
+                  NoBindS
+                     (InfixE
+                        (Just
+                           (AppE
+                              (AppE (VarE 'DSL.declarationReturn) (VarE bbCtx))
+                              (LitE (StringL entityNameInstBlockstr))))
+                        (VarE '($))
+                        (Just
+                           (DoE
+                              Nothing
+                                 [BindS
+                           (VarP declares)
+                           (AppE
+                              (AppE
+                                 (VarE 'mapM)
+                                 (LamE TupP [VarP outname,VarP typ] 
+                                 (AppE 
+                                    (AppE 
+                                       (VarE 'DSL.declare) 
+                                       (VarE outname)) (VarE typ))))
+                           (AppE
+                              (AppE
+                                 (VarE 'zip) (ListE [LitE (StringL x) | x <- outputNamesListstr]))
+                              (VarE resTyps))),
+                           LetS
+                              [ValD
+                                 (VarP inps)
+                                 (NormalB
+                                    (ListE [TupE [Just (LitE (StringL x)),Just (VarE y)]| (x, y) <- zip inputNamesListstr inputNamesList]))[],
+                              ValD
+                                 (VarP outs)
+                                 (NormalB
+                                    (ListE [TupE [Just (LitE (StringL x)), Just (VarE y)] |(x, y) <- zip outputNamesListstr outputNamesList]))
+                              []],
+                        NoBindS
+                           (AppE
+                              (AppE
+                                 (AppE (VarE 'DSL.compInBlock) (VarE entityName)) (VarE compInps))
+                                 (VarE compOuts))
+                        NoBindS
+                           (AppE
+                              (AppE
+                                 (AppE
+                                    (AppE
+                                       (AppE
+                                          (AppE (VarE 'DSL.instDecl) (ConE 'Empty))
+                                          (AppE (VarE 'Id.unsafeMake) (VarE entityName)))
+                                       (VarE entityNameInstName))
+                                    (ConE '[]))
+                                 (VarE inps))
+                              (VarE outs))
+                        NoBindS
+                           (AppE
+                              (VarE 'pure)
+                              (ListE
+                                 [AppE
+                                    (AppE
+                                       (VarE 'DSL.constructProduct) (AppE (VarE 'DSL.ety) (VarE result)))
+                                       (ListE [VarE x | x <- outputNamesList])]))])))]),
+            (NormalG (VarE 'otherwise), AppE (VarE 'error) (AppE (VarE 'ppShow) (VarE bbCtx)))])
+         []]
+      -}
+   
+
+   let bbtffunSig = SigD bbtfName (ForallT [PlainTV s SpecifiedSpec] [AppT (ConT ''Clash.Backend.Backend) (VarT s)] (AppT (AppT ArrowT (ConT ''Text)) (AppT (AppT ArrowT (ConT ''Clash.Netlist.Types.BlackBoxContext)) (AppT (AppT (ConT ''State) (VarT s)) (ConT ''Data.Text.Prettyprint.Doc.Extra.Doc)))))
+
+   return [bbtffunSig, bbtffunDec]
+
+   

@@ -5,6 +5,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module FlopoCo where
 import qualified Prelude as Prelude
@@ -32,8 +34,8 @@ import qualified FloPoCoCall as FPCC
 import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
-import Help( infoEn, infoEn2)
-import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBox)
+import Help(  infoEnVGAController)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBoxTemplateFunctionProd,generateBlackBox)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
@@ -49,6 +51,71 @@ import Text.Show.Pretty(ppShow)
 import qualified Data.Text as Text
 import Clash.Netlist.BlackBox.Util (bbResult)
 
+
+{-# OPAQUE vga_controller #-}
+vga_controller 
+    :: Clock XilinxSystem ->
+    Reset XilinxSystem ->
+    ( Signal XilinxSystem Bit          -- ^ video_on 
+     , Signal XilinxSystem Bit         -- ^ Horizontal Sync 
+     , Signal XilinxSystem Bit        -- ^ Vertical Sync
+     , Signal XilinxSystem Bit         -- ^ p_tick
+     , Signal XilinxSystem (BitVector 10)  -- ^ X Position
+     , Signal XilinxSystem (BitVector 10)  -- ^ Y Position
+     )
+vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
+$(generateBlackBoxTemplateFunctionProd infoEnVGAController)
+vga_controllerTF :: HasCallStack => Text -> TemplateFunction
+vga_controllerTF entityName = TemplateFunction [0, 1] (const True) (vga_controllerBBTF entityName)
+
+
+vga_controllerBBF :: BlackBoxFunction
+vga_controllerBBF _ _ _ _
+  = pure(Right (emptyBlackBoxMeta {bbKind = TDecl}, BBFunction "vga_controllerTF" 0 (vga_controllerTF "vga_controller")))
+-- --$(generateBlackBox infoEnVGAController)
+{-# ANN vga_controller (let
+      primName = show 'vga_controller
+      tfName = show 'vga_controllerBBF
+    in
+      InlineYamlPrimitive [minBound..] [__i|
+        BlackBoxHaskell:
+          name: #{primName}
+          templateFunction: #{tfName}
+          workInfo: Always
+      |]) #-}
+
+
+{-
+vga_controllerBBTF ::forall s. Backend s => Text -> BlackBoxContext -> State s Doc
+vga_controllerBBTF entityName bbCtx
+  | [clk_100MHz, reset] <- L.map fst (DSL.tInputs bbCtx),
+    [result] <- DSL.tResults bbCtx,
+    N.Product _ _ resTyps <- DSL.ety result
+  = do 
+      vga_controllerInstName <- Id.makeBasic "vga_controller_inst"
+      let 
+        compInps = [("clk_100MHz", DSL.ety clk_100MHz), ("reset", DSL.ety reset)]
+        compOuts = Prelude.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps
+
+      DSL.declarationReturn bbCtx "vga_controller_inst_block" $ do 
+
+        declares <- mapM (\(name, typ) -> DSL.declare name typ) (Prelude.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps)
+        let [video_on, hsync, vsync, p_tick, x, y] = declares
+
+        let 
+          inps = [("clk_100MHz", clk_100MHz), ("reset", reset)]
+          outs = [("video_on", video_on), ("hsync", hsync),
+                  ("vsync", vsync), ("p_tick", p_tick),
+                  ("x", x), ("y", y)]
+        DSL.compInBlock entityName compInps compOuts
+        DSL.instDecl
+          Empty (Id.unsafeMake entityName) vga_controllerInstName [] inps
+          outs
+        pure [DSL.constructProduct (DSL.ety result) [video_on, hsync, vsync, p_tick, x, y]]
+  | otherwise = error (ppShow bbCtx)
+-}
+
+{-
 type N = $(getPipeDep infoEn)
 type N2 = $(getPipeDep infoEn2)
 xp :: SNat N
@@ -58,6 +125,8 @@ xp2 :: SNat N2
 xp2 = SNat::SNat N2
 tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
 tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
+-}
+
 {-
 plusFloatBBTF ::
   forall s .
@@ -108,7 +177,6 @@ plusFloatBBTF  entityName bbCtx
 -- numNat :: forall n. KnownNat n => SNat n
 -- numNat = fromInteger num
 
-{-# OPAQUE plusFloat #-}
 
 {-
 plusFloat
@@ -120,6 +188,9 @@ plusFloat
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
   -}
+{-
+{-# OPAQUE plusFloat #-}
+
 plusFloat
   :: forall n .
   Clock XilinxSystem
@@ -129,6 +200,9 @@ plusFloat
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
 $(generateBlackBox infoEn)
+{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
+-}
+
 -- --$(generateBlackBoxTemplateFunction infoEn)
 -- --$(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
 -- --$(generateBlackBoxFunction (fromJust (name infoEn)))
@@ -146,7 +220,9 @@ $(generateBlackBox infoEn)
       |]) #-}
 
 -}
-{-# ANN plusFloat (flopocoPrim 'plusFloat 'plusFloatBBF) #-}
+
+{-
+
 {-# OPAQUE multFloat #-}
 multFloat
   :: forall n .
@@ -158,6 +234,8 @@ multFloat clk a b =
   delayN xp2 undefined enableGen clk (liftA2 (*) a b)
 $(generateBlackBox infoEn2)
 {-# ANN multFloat (flopocoPrim 'multFloat 'multFloatBBF) #-}
+-}
+
 {-
 data FloatException 
   = ZeroExp

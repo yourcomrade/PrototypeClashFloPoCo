@@ -1,0 +1,40 @@
+no location info>: error:
+    Clash error call:
+    Context
+      { bbName = "FlopoCo.vga_controller"
+      , bbResults =
+          [ ( Identifier (RawIdentifier "ds" Nothing []) Nothing
+            , Product
+                "GHC.Tuple.Prim.Tuple5"
+                Nothing
+                [ Bit , Bit , Bool , Unsigned 10 , Unsigned 10 ]
+            )
+          ]
+      , bbInputs =
+          [ ( Identifier (RawIdentifier "clk" Nothing []) Nothing
+            , Clock "XilinxSystem"
+            , False
+            )
+          , ( Identifier (RawIdentifier "rst" Nothing []) Nothing
+            , Reset "XilinxSystem"
+            , False
+            )
+          ]
+      , bbFunctions = fromList []
+      , bbQsysIncName = []
+      , bbLevel = 0
+      , bbCompName =
+          RawIdentifier
+            "VGAtopEntity"
+            (Just
+               UniqueIdentifier
+                 { i_baseName = "VGAtopEntity"
+                 , i_baseNameCaseFold = "vgatopentity"
+                 , i_extensionsRev = []
+                 , i_idType = Basic
+                 , i_hdl = VHDL
+                 , i_provenance = []
+                 })
+            []
+      , bbCtxName = Just "ds"
+      }
