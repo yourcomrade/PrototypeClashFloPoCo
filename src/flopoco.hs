@@ -35,7 +35,7 @@ import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
 import Help(  infoEnVGAController)
-import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBoxTemplateFunctionProd,generateBlackBox)
+import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBoxTemplateFunctionProd,generateBlackBox, generateBlackBoxProd)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
 import Clash.Annotations.BitRepresentation
@@ -64,7 +64,8 @@ vga_controller
      , Signal XilinxSystem (BitVector 10)  -- ^ Y Position
      )
 vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
-$(generateBlackBoxTemplateFunctionProd infoEnVGAController)
+$(generateBlackBoxProd infoEnVGAController)
+-- --$(generateBlackBoxTemplateFunctionProd infoEnVGAController)
 {-
 vga_controllerBBTF ::
       forall s. Backend s => Text -> BlackBoxContext -> State s Doc
@@ -95,6 +96,7 @@ vga_controllerBBTF vga_controller bbCtx
                          (DSL.ety result) [video_on, hsync, vsync, p_tick, x, y]]))
       | otherwise = error (ppShow bbCtx)
 -}
+{-
 vga_controllerTF :: HasCallStack => Text -> TemplateFunction
 vga_controllerTF entityName = TemplateFunction [0, 1] (const True) (vga_controllerBBTF entityName)
 
@@ -102,6 +104,7 @@ vga_controllerTF entityName = TemplateFunction [0, 1] (const True) (vga_controll
 vga_controllerBBF :: BlackBoxFunction
 vga_controllerBBF _ _ _ _
   = pure(Right (emptyBlackBoxMeta {bbKind = TDecl}, BBFunction "vga_controllerTF" 0 (vga_controllerTF "vga_controller")))
+-}
 -- --$(generateBlackBox infoEnVGAController)
 {-# ANN vga_controller (let
       primName = show 'vga_controller
