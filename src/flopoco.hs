@@ -65,6 +65,36 @@ vga_controller
      )
 vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
 $(generateBlackBoxTemplateFunctionProd infoEnVGAController)
+{-
+vga_controllerBBTF ::
+      forall s. Backend s => Text -> BlackBoxContext -> State s Doc
+vga_controllerBBTF vga_controller bbCtx
+      | [clk_100MHz, reset] <- L.map fst (DSL.tInputs bbCtx),
+        [result] <- DSL.tResults bbCtx,
+        N.Product _ _ resTyps <- DSL.ety result
+      = do vga_controllerInstName <- Id.makeBasic "vga_controller_inst"
+           let compInps
+                 = [("clk_100MHz", DSL.ety clk_100MHz), ("reset", DSL.ety reset)]
+               compOuts
+                 = L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps
+           (DSL.declarationReturn bbCtx "vga_controller_inst_block"
+              $ (do declares <- mapM
+                                  (\ (name, typ) -> DSL.declare name typ)
+                                  (L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps)
+                    let [video_on, hsync, vsync, p_tick, x, y] = declares
+                    let inps = [("clk_100MHz", clk_100MHz), ("reset", reset)]
+                        outs
+                          = [("video_on", video_on), ("hsync", hsync), ("vsync", vsync),
+                             ("p_tick", p_tick), ("x", x), ("y", y)]
+                    DSL.compInBlock vga_controller compInps compOuts
+                    DSL.instDecl
+                      Empty (Id.unsafeMake vga_controller) vga_controllerInstName [] inps
+                      outs
+                    pure
+                      [DSL.constructProduct
+                         (DSL.ety result) [video_on, hsync, vsync, p_tick, x, y]]))
+      | otherwise = error (ppShow bbCtx)
+-}
 vga_controllerTF :: HasCallStack => Text -> TemplateFunction
 vga_controllerTF entityName = TemplateFunction [0, 1] (const True) (vga_controllerBBTF entityName)
 
