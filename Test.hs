@@ -1,25 +1,74 @@
 module Test where
 
 import Clash.Explicit.Prelude
+import Clash.Explicit.Testbench
 import Clash.Class.BitPack
 import FlopoCo 
-{-
+
 topEntity ::
   Clock XilinxSystem ->
-  DSignal XilinxSystem 0 (BitVector 34) ->
-  DSignal XilinxSystem 0 (BitVector 34) ->
-  DSignal XilinxSystem 0 (BitVector 34) ->
-  DSignal XilinxSystem 0 (BitVector 34) ->
-  DSignal XilinxSystem 0 (BitVector 34) ->
-  DSignal XilinxSystem (0 + N + N2 + N) (BitVector 34)
-topEntity clk x y z w m = plusFloat clk (delayI undefined enableGen clk m) (multFloat clk a b)
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem (0 + N + N2 + N +N3) Float
+topEntity clk x y z w m = expFloat clk (plusFloat clk (delayI undefined enableGen clk m) aXb)
     where
         a = delayI undefined enableGen clk (plusFloat clk x y)
         b = delayI undefined enableGen clk (plusFloat clk z w)
-
+        aXb = fmaFloat clk a b c negab negc rnd
+        c = pure (fromIntegral 0)
+        negab = pure (fromIntegral 0)
+        negc = pure (fromIntegral 0)
+        rnd =pure (fromIntegral 0)
+{-
+inputVec :: Vec 4 (Float, Float, Float, Bit, Bit, BitVector 2)
+inputVec =
+  $(listToVecTH
+      [ (1.0::Float, 2.0::Float, 3.0::Float, 0::Bit, 0::Bit, 0::(BitVector 2))
+      , (1.5, -2.5, 0.0, 1, 0, 0)
+      , (0.0, 0.0, 0.0, 0, 1, 0)
+      , (3.0, 3.0, 3.0, 1, 1, 0)
+      ])
 -}
+inputVec :: Vec 9 (Float, Float, Float, Bit, Bit, BitVector 2)
+inputVec =
+  $(listToVecTH
+      [ (1.0::Float, 2.0::Float, 3.0::Float, 0::Bit, 0::Bit, 0::(BitVector 2))
+      , (1.5, 2.5, 3.5, 0, 0, 0)
+      , (2.0, 3.0, 4.0, 0, 0, 0)
+      , (2.5, 3.5, 4.5, 0, 0, 0)
+      , (3.0, 4.0, 5.0, 0, 0, 0)
+      , (3.5, 4.5, 5.5, 0, 0, 0)
+      , (4.0, 5.0, 6.0, 0, 0, 0)
+      , (4.5, 5.5, 6.5, 0, 0, 0)
+      , (5.0, 6.0, 7.0, 0, 0, 0) ])
 
+expectedVec :: Vec 14 Float
+expectedVec =
+  $(listToVecTH [0.0::Float,0.0, 0.0, 0.0, 0.0,3.0, -3.5, 1.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+  
 
+testBench :: Signal XilinxSystem Bool
+testBench = done
+  where
+    testInput =
+      stimuliGenerator clk rst inputVec
+    expectedOutput =
+      outputVerifier' clk rst expectedVec
+    done = expectedOutput (toSignal $ fmaFloat clk a b c negab negc rnd)
+    clk = tbClockGen (not <$> done)
+    rst = resetGen
+    -- Unbundle the test input into individual signals
+     -- Extract individual signals and convert to DSignal
+    (a, b, c, negab, negc, rnd) =
+      (fromSignal ia, fromSignal ib, fromSignal ic,
+       fromSignal inegab, fromSignal inegc, fromSignal irnd)
+      where
+        (ia, ib, ic, inegab, inegc, irnd) = unbundle testInput
+
+{-
 -- VGA Test Top Module
 topEntity
   :: Clock XilinxSystem   -- ^ System Clock (100 MHz)
@@ -57,3 +106,4 @@ topEntity clk rst en sw = (hsync, vsync, rgbOut)
                  ]
     , t_output = PortProduct "" [PortName "hsync", PortName "vsync", PortName "rgb"]
     }) #-}
+-}

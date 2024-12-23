@@ -16,6 +16,8 @@ module Tem (
     filePath,
     args2,
     filePath2,
+    args3,
+    filePath3,
     generateBlackBoxFunction,
     generateTemplateFunction,
     generateBlackBoxTemplateFunction,
@@ -28,7 +30,7 @@ module Tem (
 
 import qualified FloPoCoCall as FPCC
 import Lexer
-import Control.Monad.State (MonadIO, liftIO)
+import Control.Monad.State (liftIO)
 import Prelude
 import Language.Haskell.TH.Syntax
 import Data.String.Interpolate (__i)
@@ -54,12 +56,15 @@ import Data.Maybe (fromMaybe)
 
 
 floPoCoPath = "/home/minh/flopoco/build/bin/flopoco"
-args = ["frequency=300", "target=Zynq7000", "FPAdd", "wE=8", "wF=23","name=plusFloat", "outputFile=flopocoAdd.vhdl","registerLargeTables=1"]
+args = ["frequency=100", "target=Zynq7000", "IEEEFPAdd", "wE=8", "wF=23","name=plusFloat", "outputFile=flopocoAdd.vhdl","registerLargeTables=1"]
 filePath = "flopocoAdd.vhdl"
 
 
-args2 = ["frequency=300", "target=Zynq7000", "FPMult", "wE=8", "wF=23","name=multFloat", "outputFile=flopocoMult.vhdl","registerLargeTables=1"]
-filePath2 = "flopocoMult.vhdl"
+args2 = ["frequency=100", "target=Zynq7000", "IEEEFPFMA", "wE=8", "wF=23","name=fmaFloat", "outputFile=flopocoFMA.vhdl","registerLargeTables=1"]
+filePath2 = "flopocoFMA.vhdl"
+args3 = ["frequency=100", "target=Zynq7000", "IEEEFPExp", "wE=8", "wF=23","name=expFloat", "outputFile=flopocoExp.vhdl","registerLargeTables=1"]
+filePath3 = "flopocoExp.vhdl"
+
 
 getPipeDep:: InfoEntity -> Q Type
 
@@ -69,8 +74,9 @@ getPipeDep infoen = do
     return ( LitT ( NumTyLit (fromIntegral (convertMaybeToInt(pipedep infoen))))) 
         
 genFloPoCoInfoEntity :: String -> [String] -> String -> Q Exp
-genFloPoCoInfoEntity floPoCoPath args fileName = do
-    output <- liftIO $ FPCC.callFloPoCoWSLWithInput floPoCoPath args ""
+genFloPoCoInfoEntity floPoCoPathName argsName fileName = do
+    output <- liftIO $ FPCC.callFloPoCoWithInput floPoCoPathName argsName ""
+    
     if "Error" `elem` lines output
     then fail "Error in FloPoCo output"
     else do

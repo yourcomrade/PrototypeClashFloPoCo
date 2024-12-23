@@ -1,0 +1,63 @@
+{
+    "components": [
+        "testBench"
+    ],
+    "dependencies": {
+        "transitive": []
+    },
+    "domains": {
+        "IntelSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "System": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Asynchronous",
+            "reset_polarity": "ActiveHigh"
+        },
+        "XilinxSystem": {
+            "active_edge": "Rising",
+            "init_behavior": "Defined",
+            "period": 10000,
+            "reset_kind": "Synchronous",
+            "reset_polarity": "ActiveHigh"
+        }
+    },
+    "files": [
+        {
+            "name": "testBench_slv2string_B426B45701B03559.vhdl",
+            "sha256": "539ffb89eafdd9a7da1a09a7f36ba2c6f2cdaa4784d432fd3bfc068fed29cf0b"
+        },
+        {
+            "name": "Test_testBench_types.vhdl",
+            "sha256": "d1ea23f2dacadc4bb20ff10ab4a361b34ec0a81a5dfb05f2d7d0912098719517"
+        },
+        {
+            "name": "testBench.vhdl",
+            "sha256": "e8e05e1f175a4f894bdf0526b8198e642d40df5b2efdd27759872bc495eefac9"
+        }
+    ],
+    "flags": [
+        20,
+        20
+    ],
+    "hash": "c076f16a0b469bc9e9885b1c8e44fcc099f4c86a1fd6c1513900aff984cc3f54",
+    "top_component": {
+        "name": "testBench",
+        "ports_flat": [
+            {
+                "direction": "out",
+                "is_clock": false,
+                "name": "result",
+                "type_name": "boolean",
+                "width": 1
+            }
+        ]
+    },
+    "version": "unstable"
+}

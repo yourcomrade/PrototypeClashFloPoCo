@@ -17,7 +17,6 @@ module Lexer (
 import System.IO
 import Prelude
 import qualified Data.List as L
-import qualified Data.Text as T
 import Data.Char (isSpace, isDigit)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
@@ -41,6 +40,7 @@ isNothing :: Maybe a -> Bool
 isNothing Nothing = True
 isNothing _       = False
 -}
+keywords :: [String]
 keywords = ["Input", "Output", "frequency", "Pipeline"]
 -- Define an empty or default InfoEntity with all fields as Nothing
 emptyInfoEntity :: InfoEntity
@@ -51,18 +51,7 @@ emptyInfoEntity = InfoEntity {
     insig    = Nothing,
     outsig   = Nothing
 }
-readFileLineByLine :: FilePath -> IO ()
-readFileLineByLine filePath = withFile filePath ReadMode readLines
 
-readLines :: Handle -> IO ()
-readLines handle = do
-    eof <- hIsEOF handle
-    if eof
-        then return ()
-    else do
-        line <- hGetLine handle
-        putStrLn line
-        readLines handle
 lengthMaybeStrings :: Maybe [String] -> Int
 lengthMaybeStrings (Just strs) = length strs
 lengthMaybeStrings Nothing       = 0 
@@ -116,6 +105,8 @@ makeListVHDLcomments vhdlcontent =
 --makeListVHDLInfoEntities vhdlcomments = do
 
 getLastInfoEntity :: Maybe [String] -> Maybe InfoEntity -> Maybe InfoEntity
+getLastInfoEntity _ Nothing = Nothing
+getLastInfoEntity Nothing _ = Nothing
 getLastInfoEntity (Just []) (Just infoen) = Just infoen
 getLastInfoEntity (Just (x:vhdlcomments)) (Just infoen) = getLastInfoEntity (Just vhdlcomments) (updateInfoEntity x (Just infoen))
 

@@ -5,16 +5,18 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 module Help (
-   --infoEn,
-   --infoEn2,
+   infoEn,
+   infoEn2,
+   infoEn3,
    infoEnVGAController,
     
 ) where
 import Tem 
 import Lexer
 import Prelude
---infoEn = $(genFloPoCoInfoEntity floPoCoPath args filePath)
---infoEn2 = $(genFloPoCoInfoEntity floPoCoPath args2 filePath2)
+infoEn = $(genFloPoCoInfoEntity floPoCoPath args filePath)
+infoEn2 = $(genFloPoCoInfoEntity floPoCoPath args2 filePath2)
+infoEn3 = $(genFloPoCoInfoEntity floPoCoPath args3 filePath3)
 infoEnVGAController :: InfoEntity
 infoEnVGAController = InfoEntity {
     name     = Just "vga_controller",

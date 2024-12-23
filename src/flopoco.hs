@@ -5,8 +5,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use camelCase" #-}
+
 
 module FlopoCo where
 import qualified Prelude as Prelude
@@ -34,7 +33,7 @@ import qualified FloPoCoCall as FPCC
 import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)
 import Clash.Promoted.Nat(SNat(..))
-import Help(  infoEnVGAController)
+import Help
 import Tem(getPipeDep, flopocoPrim, generateBlackBoxFunction, generateTemplateFunction, generateBlackBoxTemplateFunction, generateBlackBoxTemplateFunctionProd,generateBlackBox, generateBlackBoxProd)
 import Lexer
 import Clash.Promoted.Nat.Unsafe (unsafeSNat)
@@ -50,7 +49,7 @@ import Text.Show.Pretty(ppShow)
 --import qualified Clash.Netlist.Types as DSL
 import qualified Data.Text as Text
 import Clash.Netlist.BlackBox.Util (bbResult)
-
+import Clash.Explicit.Testbench
 
 {-# OPAQUE vga_controller #-}
 vga_controller 
@@ -148,7 +147,7 @@ vga_controllerBBTF entityName bbCtx
   | otherwise = error (ppShow bbCtx)
 -}
 
-{-
+
 type N = $(getPipeDep infoEn)
 type N2 = $(getPipeDep infoEn2)
 xp :: SNat N
@@ -156,9 +155,9 @@ xp = SNat::SNat N
 
 xp2 :: SNat N2
 xp2 = SNat::SNat N2
-tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
-tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
--}
+--tOutputs :: BlackBoxContext -> [(DSL.TExpr, HWType)]
+--tOutputs = Prelude.map (\(x, t) -> (DSL.TExpr t x,t)) . bbResults
+
 
 {-
 plusFloatBBTF ::
@@ -211,7 +210,7 @@ plusFloatBBTF  entityName bbCtx
 -- numNat = fromInteger num
 
 
-{-
+$(generateBlackBox infoEn)
 plusFloat
   :: forall n . 
   Clock XilinxSystem
@@ -220,9 +219,9 @@ plusFloat
   -> DSignal XilinxSystem (n + N) Float
 plusFloat clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
-  -}
-{-
 {-# OPAQUE plusFloat #-}
+{-
+
 
 plusFloat
   :: forall n .
@@ -239,7 +238,7 @@ $(generateBlackBox infoEn)
 -- --$(generateBlackBoxTemplateFunction infoEn)
 -- --$(generateTemplateFunction (Data.Text.pack (fromJust (name infoEn))) (lengthMaybeStrings (insig infoEn)))
 -- --$(generateBlackBoxFunction (fromJust (name infoEn)))
-{-
+
 {-# ANN plusFloat (
     let
       primName = show 'plusFloat
@@ -252,22 +251,46 @@ $(generateBlackBox infoEn)
           workInfo: Always
       |]) #-}
 
--}
 
-{-
 
-{-# OPAQUE multFloat #-}
-multFloat
+$(generateBlackBox infoEn2)
+
+{-# OPAQUE fmaFloat #-}
+fmaFloat
   :: forall n .
   Clock XilinxSystem
-  -> DSignal XilinxSystem n (BitVector 34)
-  -> DSignal XilinxSystem n  (BitVector 34)
-  -> DSignal XilinxSystem (n + N2)  (BitVector 34)
-multFloat clk a b =
-  delayN xp2 undefined enableGen clk (liftA2 (*) a b)
-$(generateBlackBox infoEn2)
-{-# ANN multFloat (flopocoPrim 'multFloat 'multFloatBBF) #-}
--}
+  -> DSignal XilinxSystem n Float
+  -> DSignal XilinxSystem n  Float
+  -> DSignal XilinxSystem n Float
+  -> DSignal XilinxSystem n Bit
+  -> DSignal XilinxSystem n Bit
+  -> DSignal XilinxSystem n (BitVector 2)
+  -> DSignal XilinxSystem (n + N2)  Float
+fmaFloat clk a b c negab negc _ = 
+  let 
+    resab = mux (fmap (== 1)  negab)
+             (liftA2 (*) (liftA2 (*) a b) (pure (-1)))
+             (liftA2 (*) a b)
+    resc = mux (fmap (== 1) negc)
+             (liftA2 (*) c (pure (-1)))
+              c
+  in
+  delayN xp2 undefined enableGen clk (liftA2 (+) resab resc)
+{-# ANN fmaFloat (flopocoPrim 'fmaFloat 'fmaFloatBBF) #-}
+
+$(generateBlackBox infoEn3)
+type N3 = $(getPipeDep infoEn3)
+xp3 :: SNat N3
+xp3 = SNat::SNat N3
+expFloat
+  :: forall n .
+  Clock XilinxSystem 
+  -> DSignal XilinxSystem n Float
+  -> DSignal XilinxSystem (n + N3) Float
+expFloat clk a = delayN xp3 undefined enableGen clk (liftA exp a)
+{-# OPAQUE expFloat #-}
+{-# ANN expFloat (flopocoPrim 'expFloat 'expFloatBBF) #-}
+
 
 {-
 data FloatException 
@@ -430,8 +453,8 @@ topEntity clk x y z =
     (delayI undefined enableGen clk x)
     (plusFloat clk y z)
 -}
-{-
 
+{-
 topEntity2 ::
   Clock XilinxSystem ->
   Signal XilinxSystem Float ->
@@ -442,6 +465,6 @@ topEntity2 clk x y z =
   plusFloatX clk
     (fmap Just x)
     (plusFloatX clk (fmap Just y) (fmap Just z))
-
-
 -}
+
+

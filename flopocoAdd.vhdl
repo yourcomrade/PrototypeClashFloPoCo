@@ -1,15 +1,17 @@
 --------------------------------------------------------------------------------
---                RightShifterSticky24_by_max_26_Freq300_uid4
--- VHDL generated for Zynq7000 @ 300MHz
+--                RightShifterSticky26_by_max_25_Freq100_uid4
+-- VHDL generated for Zynq7000 @ 100MHz
 -- This operator is part of the Infinite Virtual Library FloPoCoLib
 -- All rights reserved 
 -- Authors: Bogdan Pasca (2008-2011), Florent de Dinechin (2008-2019)
 --------------------------------------------------------------------------------
--- Pipeline depth: 2 cycles
--- Clock period (ns): 3.33333
--- Target frequency (MHz): 300
+-- Pipeline depth: 1 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
 -- Input signals: X S
 -- Output signals: R Sticky
+--  approx. input signal timings: X: (c0, 4.092000ns)S: (c0, 5.970000ns)
+--  approx. output signal timings: R: (c0, 7.218000ns)Sticky: (c1, 0.460000ns)
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -19,73 +21,82 @@ library std;
 use std.textio.all;
 library work;
 
-entity RightShifterSticky24_by_max_26_Freq300_uid4 is
+entity RightShifterSticky26_by_max_25_Freq100_uid4 is
     port (clk : in std_logic;
-          X : in  std_logic_vector(23 downto 0);
+          X : in  std_logic_vector(25 downto 0);
           S : in  std_logic_vector(4 downto 0);
           R : out  std_logic_vector(25 downto 0);
           Sticky : out  std_logic   );
 end entity;
 
-architecture arch of RightShifterSticky24_by_max_26_Freq300_uid4 is
-signal ps, ps_d1, ps_d2 :  std_logic_vector(4 downto 0);
+architecture arch of RightShifterSticky26_by_max_25_Freq100_uid4 is
+signal ps :  std_logic_vector(4 downto 0);
+   -- timing of ps: (c0, 5.970000ns)
 signal Xpadded :  std_logic_vector(25 downto 0);
+   -- timing of Xpadded: (c0, 4.092000ns)
 signal level5 :  std_logic_vector(25 downto 0);
-signal stk4, stk4_d1 :  std_logic;
-signal level4, level4_d1 :  std_logic_vector(25 downto 0);
+   -- timing of level5: (c0, 4.092000ns)
+signal stk4 :  std_logic;
+   -- timing of stk4: (c0, 6.679500ns)
+signal level4 :  std_logic_vector(25 downto 0);
+   -- timing of level4: (c0, 5.970000ns)
 signal stk3 :  std_logic;
-signal level3, level3_d1 :  std_logic_vector(25 downto 0);
-signal stk2, stk2_d1 :  std_logic;
-signal level2, level2_d1, level2_d2 :  std_logic_vector(25 downto 0);
+   -- timing of stk3: (c0, 7.360500ns)
+signal level3 :  std_logic_vector(25 downto 0);
+   -- timing of level3: (c0, 6.594000ns)
+signal stk2 :  std_logic;
+   -- timing of stk2: (c0, 8.013000ns)
+signal level2 :  std_logic_vector(25 downto 0);
+   -- timing of level2: (c0, 6.594000ns)
 signal stk1 :  std_logic;
-signal level1, level1_d1, level1_d2 :  std_logic_vector(25 downto 0);
-signal stk0 :  std_logic;
+   -- timing of stk1: (c0, 8.665500ns)
+signal level1 :  std_logic_vector(25 downto 0);
+   -- timing of level1: (c0, 7.218000ns)
+signal stk0, stk0_d1 :  std_logic;
+   -- timing of stk0: (c0, 9.318000ns)
 signal level0 :  std_logic_vector(25 downto 0);
+   -- timing of level0: (c0, 7.218000ns)
+signal stk :  std_logic;
+   -- timing of stk: (c1, 0.460000ns)
 begin
    process(clk)
       begin
          if clk'event and clk = '1' then
-            ps_d1 <=  ps;
-            ps_d2 <=  ps_d1;
-            stk4_d1 <=  stk4;
-            level4_d1 <=  level4;
-            level3_d1 <=  level3;
-            stk2_d1 <=  stk2;
-            level2_d1 <=  level2;
-            level2_d2 <=  level2_d1;
-            level1_d1 <=  level1;
-            level1_d2 <=  level1_d1;
+            stk0_d1 <=  stk0;
          end if;
       end process;
    ps<= S;
-   Xpadded <= X&(1 downto 0 => '0');
+   Xpadded <= X;
    level5<= Xpadded;
    stk4 <= '1' when (level5(15 downto 0)/="0000000000000000" and ps(4)='1')   else '0';
    level4 <=  level5 when  ps(4)='0'    else (15 downto 0 => '0') & level5(25 downto 16);
-   stk3 <= '1' when (level4_d1(7 downto 0)/="00000000" and ps_d1(3)='1') or stk4_d1 ='1'   else '0';
+   stk3 <= '1' when (level4(7 downto 0)/="00000000" and ps(3)='1') or stk4 ='1'   else '0';
    level3 <=  level4 when  ps(3)='0'    else (7 downto 0 => '0') & level4(25 downto 8);
-   stk2 <= '1' when (level3_d1(3 downto 0)/="0000" and ps_d1(2)='1') or stk3 ='1'   else '0';
+   stk2 <= '1' when (level3(3 downto 0)/="0000" and ps(2)='1') or stk3 ='1'   else '0';
    level2 <=  level3 when  ps(2)='0'    else (3 downto 0 => '0') & level3(25 downto 4);
-   stk1 <= '1' when (level2_d2(1 downto 0)/="00" and ps_d2(1)='1') or stk2_d1 ='1'   else '0';
+   stk1 <= '1' when (level2(1 downto 0)/="00" and ps(1)='1') or stk2 ='1'   else '0';
    level1 <=  level2 when  ps(1)='0'    else (1 downto 0 => '0') & level2(25 downto 2);
-   stk0 <= '1' when (level1_d2(0 downto 0)/="0" and ps_d2(0)='1') or stk1 ='1'   else '0';
+   stk0 <= '1' when (level1(0 downto 0)/="0" and ps(0)='1') or stk1 ='1'   else '0';
    level0 <=  level1 when  ps(0)='0'    else (0 downto 0 => '0') & level1(25 downto 1);
+   stk <= stk0_d1;
    R <= level0;
-   Sticky <= stk0;
+   Sticky <= stk;
 end architecture;
 
 --------------------------------------------------------------------------------
---                          IntAdder_27_Freq300_uid6
--- VHDL generated for Zynq7000 @ 300MHz
+--                          IntAdder_27_Freq100_uid6
+-- VHDL generated for Zynq7000 @ 100MHz
 -- This operator is part of the Infinite Virtual Library FloPoCoLib
 -- All rights reserved 
 -- Authors: Bogdan Pasca, Florent de Dinechin (2008-2016)
 --------------------------------------------------------------------------------
--- Pipeline depth: 4 cycles
--- Clock period (ns): 3.33333
--- Target frequency (MHz): 300
+-- Pipeline depth: 1 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
 -- Input signals: X Y Cin
 -- Output signals: R
+--  approx. input signal timings: X: (c0, 4.092000ns)Y: (c0, 7.842000ns)Cin: (c1, 0.460000ns)
+--  approx. output signal timings: R: (c1, 2.284000ns)
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -95,7 +106,7 @@ library std;
 use std.textio.all;
 library work;
 
-entity IntAdder_27_Freq300_uid6 is
+entity IntAdder_27_Freq100_uid6 is
     port (clk : in std_logic;
           X : in  std_logic_vector(26 downto 0);
           Y : in  std_logic_vector(26 downto 0);
@@ -103,46 +114,39 @@ entity IntAdder_27_Freq300_uid6 is
           R : out  std_logic_vector(26 downto 0)   );
 end entity;
 
-architecture arch of IntAdder_27_Freq300_uid6 is
-signal Cin_1, Cin_1_d1 :  std_logic;
-signal X_1, X_1_d1, X_1_d2, X_1_d3, X_1_d4 :  std_logic_vector(27 downto 0);
-signal Y_1, Y_1_d1, Y_1_d2, Y_1_d3 :  std_logic_vector(27 downto 0);
-signal S_1 :  std_logic_vector(27 downto 0);
-signal R_1 :  std_logic_vector(26 downto 0);
+architecture arch of IntAdder_27_Freq100_uid6 is
+signal Rtmp :  std_logic_vector(26 downto 0);
+   -- timing of Rtmp: (c1, 2.284000ns)
+signal X_d1 :  std_logic_vector(26 downto 0);
+   -- timing of X: (c0, 4.092000ns)
+signal Y_d1 :  std_logic_vector(26 downto 0);
+   -- timing of Y: (c0, 7.842000ns)
 begin
    process(clk)
       begin
          if clk'event and clk = '1' then
-            Cin_1_d1 <=  Cin_1;
-            X_1_d1 <=  X_1;
-            X_1_d2 <=  X_1_d1;
-            X_1_d3 <=  X_1_d2;
-            X_1_d4 <=  X_1_d3;
-            Y_1_d1 <=  Y_1;
-            Y_1_d2 <=  Y_1_d1;
-            Y_1_d3 <=  Y_1_d2;
+            X_d1 <=  X;
+            Y_d1 <=  Y;
          end if;
       end process;
-   Cin_1 <= Cin;
-   X_1 <= '0' & X(26 downto 0);
-   Y_1 <= '0' & Y(26 downto 0);
-   S_1 <= X_1_d4 + Y_1_d3 + Cin_1_d1;
-   R_1 <= S_1(26 downto 0);
-   R <= R_1 ;
+   Rtmp <= X_d1 + Y_d1 + Cin;
+   R <= Rtmp;
 end architecture;
 
 --------------------------------------------------------------------------------
---                     Normalizer_Z_28_28_28_Freq300_uid8
--- VHDL generated for Zynq7000 @ 300MHz
+--                            LZC_26_Freq100_uid8
+-- VHDL generated for Zynq7000 @ 100MHz
 -- This operator is part of the Infinite Virtual Library FloPoCoLib
 -- All rights reserved 
--- Authors: Florent de Dinechin, (2007-2020)
+-- Authors: Florent de Dinechin, Bogdan Pasca (2007)
 --------------------------------------------------------------------------------
--- Pipeline depth: 2 cycles
--- Clock period (ns): 3.33333
--- Target frequency (MHz): 300
--- Input signals: X
--- Output signals: Count R
+-- Pipeline depth: 0 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
+-- Input signals: I
+-- Output signals: O
+--  approx. input signal timings: I: (c1, 2.284000ns)
+--  approx. output signal timings: O: (c1, 6.823000ns)
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -152,71 +156,129 @@ library std;
 use std.textio.all;
 library work;
 
-entity Normalizer_Z_28_28_28_Freq300_uid8 is
+entity LZC_26_Freq100_uid8 is
     port (clk : in std_logic;
-          X : in  std_logic_vector(27 downto 0);
-          Count : out  std_logic_vector(4 downto 0);
-          R : out  std_logic_vector(27 downto 0)   );
+          I : in  std_logic_vector(25 downto 0);
+          O : out  std_logic_vector(4 downto 0)   );
 end entity;
 
-architecture arch of Normalizer_Z_28_28_28_Freq300_uid8 is
-signal level5 :  std_logic_vector(27 downto 0);
-signal count4, count4_d1, count4_d2 :  std_logic;
-signal level4, level4_d1 :  std_logic_vector(27 downto 0);
-signal count3, count3_d1 :  std_logic;
-signal level3 :  std_logic_vector(27 downto 0);
-signal count2, count2_d1 :  std_logic;
-signal level2, level2_d1 :  std_logic_vector(27 downto 0);
-signal count1 :  std_logic;
-signal level1 :  std_logic_vector(27 downto 0);
-signal count0 :  std_logic;
-signal level0 :  std_logic_vector(27 downto 0);
-signal sCount :  std_logic_vector(4 downto 0);
+architecture arch of LZC_26_Freq100_uid8 is
+signal level5 :  std_logic_vector(30 downto 0);
+   -- timing of level5: (c1, 2.284000ns)
+signal digit4 :  std_logic;
+   -- timing of digit4: (c1, 2.993500ns)
+signal level4 :  std_logic_vector(14 downto 0);
+   -- timing of level4: (c1, 3.617500ns)
+signal digit3 :  std_logic;
+   -- timing of digit3: (c1, 4.298500ns)
+signal level3 :  std_logic_vector(6 downto 0);
+   -- timing of level3: (c1, 4.922500ns)
+signal digit2 :  std_logic;
+   -- timing of digit2: (c1, 5.575000ns)
+signal level2 :  std_logic_vector(2 downto 0);
+   -- timing of level2: (c1, 6.199000ns)
+signal lowBits :  std_logic_vector(1 downto 0);
+   -- timing of lowBits: (c1, 6.823000ns)
+signal outHighBits :  std_logic_vector(2 downto 0);
+   -- timing of outHighBits: (c1, 5.575000ns)
+begin
+   -- pad input to the next power of two minus 1
+   level5 <= I & "11111";
+   -- Main iteration for large inputs
+   digit4<= '1' when level5(30 downto 15) = "0000000000000000" else '0';
+   level4<= level5(14 downto 0) when digit4='1' else level5(30 downto 16);
+   digit3<= '1' when level4(14 downto 7) = "00000000" else '0';
+   level3<= level4(6 downto 0) when digit3='1' else level4(14 downto 8);
+   digit2<= '1' when level3(6 downto 3) = "0000" else '0';
+   level2<= level3(2 downto 0) when digit2='1' else level3(6 downto 4);
+   -- Finish counting with one LUT
+   with level2  select  lowBits <= 
+      "11" when "000",
+      "10" when "001",
+      "01" when "010",
+      "01" when "011",
+      "00" when others;
+   outHighBits <= digit4 & digit3 & digit2 & "";
+   O <= outHighBits & lowBits ;
+end architecture;
+
+--------------------------------------------------------------------------------
+--                   LeftShifter27_by_max_26_Freq100_uid10
+-- VHDL generated for Zynq7000 @ 100MHz
+-- This operator is part of the Infinite Virtual Library FloPoCoLib
+-- All rights reserved 
+-- Authors: Bogdan Pasca (2008-2011), Florent de Dinechin (2008-2019)
+--------------------------------------------------------------------------------
+-- Pipeline depth: 1 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
+-- Input signals: X S
+-- Output signals: R
+--  approx. input signal timings: X: (c1, 2.284000ns)S: (c1, 8.701000ns)
+--  approx. output signal timings: R: (c2, 1.187000ns)
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+library std;
+use std.textio.all;
+library work;
+
+entity LeftShifter27_by_max_26_Freq100_uid10 is
+    port (clk : in std_logic;
+          X : in  std_logic_vector(26 downto 0);
+          S : in  std_logic_vector(4 downto 0);
+          R : out  std_logic_vector(52 downto 0)   );
+end entity;
+
+architecture arch of LeftShifter27_by_max_26_Freq100_uid10 is
+signal ps, ps_d1 :  std_logic_vector(4 downto 0);
+   -- timing of ps: (c1, 8.701000ns)
+signal level0 :  std_logic_vector(26 downto 0);
+   -- timing of level0: (c1, 2.284000ns)
+signal level1, level1_d1 :  std_logic_vector(27 downto 0);
+   -- timing of level1: (c1, 8.701000ns)
+signal level2 :  std_logic_vector(29 downto 0);
+   -- timing of level2: (c2, 0.143000ns)
+signal level3 :  std_logic_vector(33 downto 0);
+   -- timing of level3: (c2, 0.143000ns)
+signal level4 :  std_logic_vector(41 downto 0);
+   -- timing of level4: (c2, 1.187000ns)
+signal level5 :  std_logic_vector(57 downto 0);
+   -- timing of level5: (c2, 1.187000ns)
 begin
    process(clk)
       begin
          if clk'event and clk = '1' then
-            count4_d1 <=  count4;
-            count4_d2 <=  count4_d1;
-            level4_d1 <=  level4;
-            count3_d1 <=  count3;
-            count2_d1 <=  count2;
-            level2_d1 <=  level2;
+            ps_d1 <=  ps;
+            level1_d1 <=  level1;
          end if;
       end process;
-   level5 <= X ;
-   count4<= '1' when level5(27 downto 12) = (27 downto 12=>'0') else '0';
-   level4<= level5(27 downto 0) when count4='0' else level5(11 downto 0) & (15 downto 0 => '0');
-
-   count3<= '1' when level4_d1(27 downto 20) = (27 downto 20=>'0') else '0';
-   level3<= level4_d1(27 downto 0) when count3='0' else level4_d1(19 downto 0) & (7 downto 0 => '0');
-
-   count2<= '1' when level3(27 downto 24) = (27 downto 24=>'0') else '0';
-   level2<= level3(27 downto 0) when count2='0' else level3(23 downto 0) & (3 downto 0 => '0');
-
-   count1<= '1' when level2_d1(27 downto 26) = (27 downto 26=>'0') else '0';
-   level1<= level2_d1(27 downto 0) when count1='0' else level2_d1(25 downto 0) & (1 downto 0 => '0');
-
-   count0<= '1' when level1(27 downto 27) = (27 downto 27=>'0') else '0';
-   level0<= level1(27 downto 0) when count0='0' else level1(26 downto 0) & (0 downto 0 => '0');
-
-   R <= level0;
-   sCount <= count4_d2 & count3_d1 & count2_d1 & count1 & count0;
-   Count <= sCount;
+   ps<= S;
+   level0<= X;
+   level1<= level0 & (0 downto 0 => '0') when ps(0)= '1' else     (0 downto 0 => '0') & level0;
+   level2<= level1_d1 & (1 downto 0 => '0') when ps_d1(1)= '1' else     (1 downto 0 => '0') & level1_d1;
+   level3<= level2 & (3 downto 0 => '0') when ps_d1(2)= '1' else     (3 downto 0 => '0') & level2;
+   level4<= level3 & (7 downto 0 => '0') when ps_d1(3)= '1' else     (7 downto 0 => '0') & level3;
+   level5<= level4 & (15 downto 0 => '0') when ps_d1(4)= '1' else     (15 downto 0 => '0') & level4;
+   R <= level5(52 downto 0);
 end architecture;
 
 --------------------------------------------------------------------------------
---                         IntAdder_34_Freq300_uid11
--- VHDL generated for Zynq7000 @ 300MHz
+--                         IntAdder_31_Freq100_uid13
+-- VHDL generated for Zynq7000 @ 100MHz
 -- This operator is part of the Infinite Virtual Library FloPoCoLib
 -- All rights reserved 
 -- Authors: Bogdan Pasca, Florent de Dinechin (2008-2016)
 --------------------------------------------------------------------------------
--- Pipeline depth: 7 cycles
--- Clock period (ns): 3.33333
--- Target frequency (MHz): 300
+-- Pipeline depth: 2 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
 -- Input signals: X Y Cin
 -- Output signals: R
+--  approx. input signal timings: X: (c2, 1.187000ns)Y: (c0, 0.000000ns)Cin: (c2, 3.065000ns)
+--  approx. output signal timings: R: (c2, 5.003000ns)
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -226,49 +288,46 @@ library std;
 use std.textio.all;
 library work;
 
-entity IntAdder_34_Freq300_uid11 is
+entity IntAdder_31_Freq100_uid13 is
     port (clk : in std_logic;
-          X : in  std_logic_vector(33 downto 0);
-          Y : in  std_logic_vector(33 downto 0);
+          X : in  std_logic_vector(30 downto 0);
+          Y : in  std_logic_vector(30 downto 0);
           Cin : in  std_logic;
-          R : out  std_logic_vector(33 downto 0)   );
+          R : out  std_logic_vector(30 downto 0)   );
 end entity;
 
-architecture arch of IntAdder_34_Freq300_uid11 is
-signal Rtmp :  std_logic_vector(33 downto 0);
-signal Y_d1, Y_d2, Y_d3, Y_d4, Y_d5, Y_d6, Y_d7 :  std_logic_vector(33 downto 0);
-signal Cin_d1 :  std_logic;
+architecture arch of IntAdder_31_Freq100_uid13 is
+signal Rtmp :  std_logic_vector(30 downto 0);
+   -- timing of Rtmp: (c2, 5.003000ns)
+signal Y_d1, Y_d2 :  std_logic_vector(30 downto 0);
+   -- timing of Y: (c0, 0.000000ns)
 begin
    process(clk)
       begin
          if clk'event and clk = '1' then
             Y_d1 <=  Y;
             Y_d2 <=  Y_d1;
-            Y_d3 <=  Y_d2;
-            Y_d4 <=  Y_d3;
-            Y_d5 <=  Y_d4;
-            Y_d6 <=  Y_d5;
-            Y_d7 <=  Y_d6;
-            Cin_d1 <=  Cin;
          end if;
       end process;
-   Rtmp <= X + Y_d7 + Cin_d1;
+   Rtmp <= X + Y_d2 + Cin;
    R <= Rtmp;
 end architecture;
 
 --------------------------------------------------------------------------------
 --                                 plusFloat
---                         (FPAdd_8_23_Freq300_uid2)
--- VHDL generated for Zynq7000 @ 300MHz
+--                       (IEEEFPAdd_8_23_Freq100_uid2)
+-- VHDL generated for Zynq7000 @ 100MHz
 -- This operator is part of the Infinite Virtual Library FloPoCoLib
 -- All rights reserved 
--- Authors: Florent de Dinechin, Bogdan Pasca (2010-2017)
+-- Authors: Florent de Dinechin, Valentin Huguet (2016)
 --------------------------------------------------------------------------------
--- Pipeline depth: 8 cycles
--- Clock period (ns): 3.33333
--- Target frequency (MHz): 300
+-- Pipeline depth: 2 cycles
+-- Clock period (ns): 10
+-- Target frequency (MHz): 100
 -- Input signals: X Y
 -- Output signals: R
+--  approx. input signal timings: X: (c0, 0.000000ns)Y: (c0, 0.000000ns)
+--  approx. output signal timings: R: (c2, 6.767000ns)
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -280,21 +339,21 @@ library work;
 
 entity plusFloat is
     port (clk : in std_logic;
-          X : in  std_logic_vector(8+23+2 downto 0);
-          Y : in  std_logic_vector(8+23+2 downto 0);
-          R : out  std_logic_vector(8+23+2 downto 0)   );
+          X : in  std_logic_vector(31 downto 0);
+          Y : in  std_logic_vector(31 downto 0);
+          R : out  std_logic_vector(31 downto 0)   );
 end entity;
 
 architecture arch of plusFloat is
-   component RightShifterSticky24_by_max_26_Freq300_uid4 is
+   component RightShifterSticky26_by_max_25_Freq100_uid4 is
       port ( clk : in std_logic;
-             X : in  std_logic_vector(23 downto 0);
+             X : in  std_logic_vector(25 downto 0);
              S : in  std_logic_vector(4 downto 0);
              R : out  std_logic_vector(25 downto 0);
              Sticky : out  std_logic   );
    end component;
 
-   component IntAdder_27_Freq300_uid6 is
+   component IntAdder_27_Freq100_uid6 is
       port ( clk : in std_logic;
              X : in  std_logic_vector(26 downto 0);
              Y : in  std_logic_vector(26 downto 0);
@@ -302,198 +361,287 @@ architecture arch of plusFloat is
              R : out  std_logic_vector(26 downto 0)   );
    end component;
 
-   component Normalizer_Z_28_28_28_Freq300_uid8 is
+   component LZC_26_Freq100_uid8 is
       port ( clk : in std_logic;
-             X : in  std_logic_vector(27 downto 0);
-             Count : out  std_logic_vector(4 downto 0);
-             R : out  std_logic_vector(27 downto 0)   );
+             I : in  std_logic_vector(25 downto 0);
+             O : out  std_logic_vector(4 downto 0)   );
    end component;
 
-   component IntAdder_34_Freq300_uid11 is
+   component LeftShifter27_by_max_26_Freq100_uid10 is
       port ( clk : in std_logic;
-             X : in  std_logic_vector(33 downto 0);
-             Y : in  std_logic_vector(33 downto 0);
+             X : in  std_logic_vector(26 downto 0);
+             S : in  std_logic_vector(4 downto 0);
+             R : out  std_logic_vector(52 downto 0)   );
+   end component;
+
+   component IntAdder_31_Freq100_uid13 is
+      port ( clk : in std_logic;
+             X : in  std_logic_vector(30 downto 0);
+             Y : in  std_logic_vector(30 downto 0);
              Cin : in  std_logic;
-             R : out  std_logic_vector(33 downto 0)   );
+             R : out  std_logic_vector(30 downto 0)   );
    end component;
 
-signal excExpFracX :  std_logic_vector(32 downto 0);
-signal excExpFracY :  std_logic_vector(32 downto 0);
+signal expFracX :  std_logic_vector(30 downto 0);
+   -- timing of expFracX: (c0, 0.000000ns)
+signal expFracY :  std_logic_vector(30 downto 0);
+   -- timing of expFracY: (c0, 0.000000ns)
+signal expXmExpY :  std_logic_vector(8 downto 0);
+   -- timing of expXmExpY: (c0, 1.368000ns)
+signal expYmExpX :  std_logic_vector(8 downto 0);
+   -- timing of expYmExpX: (c0, 1.368000ns)
 signal swap :  std_logic;
-signal eXmeY :  std_logic_vector(7 downto 0);
-signal eYmeX :  std_logic_vector(7 downto 0);
-signal expDiff, expDiff_d1 :  std_logic_vector(7 downto 0);
-signal newX :  std_logic_vector(33 downto 0);
-signal newY, newY_d1 :  std_logic_vector(33 downto 0);
-signal expX, expX_d1 :  std_logic_vector(7 downto 0);
-signal excX :  std_logic_vector(1 downto 0);
-signal excY, excY_d1 :  std_logic_vector(1 downto 0);
-signal signX, signX_d1 :  std_logic;
-signal signY, signY_d1 :  std_logic;
-signal EffSub, EffSub_d1, EffSub_d2, EffSub_d3, EffSub_d4, EffSub_d5, EffSub_d6, EffSub_d7 :  std_logic;
-signal sXsYExnXY, sXsYExnXY_d1 :  std_logic_vector(5 downto 0);
-signal sdExnXY :  std_logic_vector(3 downto 0);
-signal fracY :  std_logic_vector(23 downto 0);
-signal excRt, excRt_d1, excRt_d2, excRt_d3, excRt_d4, excRt_d5, excRt_d6, excRt_d7 :  std_logic_vector(1 downto 0);
-signal signR, signR_d1, signR_d2, signR_d3, signR_d4, signR_d5 :  std_logic;
-signal shiftedOut :  std_logic;
-signal shiftVal :  std_logic_vector(4 downto 0);
-signal shiftedFracY :  std_logic_vector(25 downto 0);
-signal sticky, sticky_d1 :  std_logic;
-signal fracYpad :  std_logic_vector(26 downto 0);
-signal EffSubVector :  std_logic_vector(26 downto 0);
-signal fracYpadXorOp :  std_logic_vector(26 downto 0);
-signal fracXpad :  std_logic_vector(26 downto 0);
-signal cInSigAdd :  std_logic;
-signal fracAddResult :  std_logic_vector(26 downto 0);
-signal fracSticky :  std_logic_vector(27 downto 0);
-signal nZerosNew, nZerosNew_d1 :  std_logic_vector(4 downto 0);
-signal shiftedFrac, shiftedFrac_d1 :  std_logic_vector(27 downto 0);
-signal extendedExpInc, extendedExpInc_d1, extendedExpInc_d2, extendedExpInc_d3, extendedExpInc_d4, extendedExpInc_d5, extendedExpInc_d6 :  std_logic_vector(8 downto 0);
-signal updatedExp :  std_logic_vector(9 downto 0);
-signal eqdiffsign, eqdiffsign_d1, eqdiffsign_d2 :  std_logic;
-signal expFrac :  std_logic_vector(33 downto 0);
-signal stk :  std_logic;
-signal rnd :  std_logic;
+   -- timing of swap: (c0, 1.596000ns)
+signal newX, newX_d1 :  std_logic_vector(31 downto 0);
+   -- timing of newX: (c0, 2.220000ns)
+signal newY, newY_d1 :  std_logic_vector(31 downto 0);
+   -- timing of newY: (c0, 2.220000ns)
+signal expDiff :  std_logic_vector(8 downto 0);
+   -- timing of expDiff: (c0, 2.220000ns)
+signal expNewX, expNewX_d1 :  std_logic_vector(7 downto 0);
+   -- timing of expNewX: (c0, 2.220000ns)
+signal expNewY :  std_logic_vector(7 downto 0);
+   -- timing of expNewY: (c0, 2.220000ns)
+signal signNewX, signNewX_d1, signNewX_d2 :  std_logic;
+   -- timing of signNewX: (c0, 2.220000ns)
+signal signNewY, signNewY_d1, signNewY_d2 :  std_logic;
+   -- timing of signNewY: (c0, 2.220000ns)
+signal EffSub, EffSub_d1, EffSub_d2 :  std_logic;
+   -- timing of EffSub: (c0, 2.844000ns)
+signal xExpFieldZero, xExpFieldZero_d1 :  std_logic;
+   -- timing of xExpFieldZero: (c0, 4.092000ns)
+signal yExpFieldZero, yExpFieldZero_d1 :  std_logic;
+   -- timing of yExpFieldZero: (c0, 4.092000ns)
+signal xExpFieldAllOnes, xExpFieldAllOnes_d1 :  std_logic;
+   -- timing of xExpFieldAllOnes: (c0, 4.092000ns)
+signal yExpFieldAllOnes, yExpFieldAllOnes_d1 :  std_logic;
+   -- timing of yExpFieldAllOnes: (c0, 4.092000ns)
+signal xSigFieldZero :  std_logic;
+   -- timing of xSigFieldZero: (c1, 3.970000ns)
+signal ySigFieldZero :  std_logic;
+   -- timing of ySigFieldZero: (c1, 3.970000ns)
+signal xIsNaN :  std_logic;
+   -- timing of xIsNaN: (c1, 4.594000ns)
+signal yIsNaN :  std_logic;
+   -- timing of yIsNaN: (c1, 4.594000ns)
+signal xIsInfinity, xIsInfinity_d1 :  std_logic;
+   -- timing of xIsInfinity: (c1, 4.594000ns)
+signal yIsInfinity, yIsInfinity_d1 :  std_logic;
+   -- timing of yIsInfinity: (c1, 4.594000ns)
+signal xIsZero, xIsZero_d1 :  std_logic;
+   -- timing of xIsZero: (c1, 4.594000ns)
+signal yIsZero, yIsZero_d1 :  std_logic;
+   -- timing of yIsZero: (c1, 4.594000ns)
+signal bothSubNormals :  std_logic;
+   -- timing of bothSubNormals: (c0, 4.716000ns)
+signal resultIsNaN, resultIsNaN_d1 :  std_logic;
+   -- timing of resultIsNaN: (c1, 5.218000ns)
+signal significandNewX :  std_logic_vector(23 downto 0);
+   -- timing of significandNewX: (c0, 4.092000ns)
+signal significandNewY :  std_logic_vector(23 downto 0);
+   -- timing of significandNewY: (c0, 4.092000ns)
+signal allShiftedOut :  std_logic;
+   -- timing of allShiftedOut: (c0, 3.588000ns)
+signal rightShiftValue :  std_logic_vector(4 downto 0);
+   -- timing of rightShiftValue: (c0, 4.212000ns)
+signal shiftCorrection :  std_logic;
+   -- timing of shiftCorrection: (c0, 4.716000ns)
+signal finalRightShiftValue :  std_logic_vector(4 downto 0);
+   -- timing of finalRightShiftValue: (c0, 5.970000ns)
+signal significandY00 :  std_logic_vector(25 downto 0);
+   -- timing of significandY00: (c0, 4.092000ns)
+signal shiftedSignificandY :  std_logic_vector(25 downto 0);
+   -- timing of shiftedSignificandY: (c0, 7.218000ns)
+signal stickyLow, stickyLow_d1 :  std_logic;
+   -- timing of stickyLow: (c1, 0.460000ns)
+signal summandY :  std_logic_vector(26 downto 0);
+   -- timing of summandY: (c0, 7.842000ns)
+signal summandX :  std_logic_vector(26 downto 0);
+   -- timing of summandX: (c0, 4.092000ns)
+signal carryIn :  std_logic;
+   -- timing of carryIn: (c1, 0.460000ns)
+signal significandZ :  std_logic_vector(26 downto 0);
+   -- timing of significandZ: (c1, 2.284000ns)
+signal z1 :  std_logic;
+   -- timing of z1: (c1, 2.284000ns)
+signal z0 :  std_logic;
+   -- timing of z0: (c1, 2.284000ns)
+signal lzcZInput :  std_logic_vector(25 downto 0);
+   -- timing of lzcZInput: (c1, 2.284000ns)
+signal lzc :  std_logic_vector(4 downto 0);
+   -- timing of lzc: (c1, 6.823000ns)
+signal leftShiftVal :  std_logic_vector(4 downto 0);
+   -- timing of leftShiftVal: (c1, 8.701000ns)
+signal normalizedSignificand :  std_logic_vector(52 downto 0);
+   -- timing of normalizedSignificand: (c2, 1.187000ns)
+signal significandPreRound :  std_logic_vector(22 downto 0);
+   -- timing of significandPreRound: (c2, 1.187000ns)
 signal lsb :  std_logic;
-signal needToRound :  std_logic;
-signal RoundedExpFrac :  std_logic_vector(33 downto 0);
-signal upExc :  std_logic_vector(1 downto 0);
-signal fracR, fracR_d1 :  std_logic_vector(22 downto 0);
-signal expR, expR_d1 :  std_logic_vector(7 downto 0);
-signal exExpExc :  std_logic_vector(3 downto 0);
-signal excRt2, excRt2_d1 :  std_logic_vector(1 downto 0);
-signal excR :  std_logic_vector(1 downto 0);
-signal signR2, signR2_d1, signR2_d2 :  std_logic;
-signal computedR :  std_logic_vector(33 downto 0);
+   -- timing of lsb: (c2, 1.187000ns)
+signal roundBit :  std_logic;
+   -- timing of roundBit: (c2, 1.187000ns)
+signal stickyBit :  std_logic;
+   -- timing of stickyBit: (c2, 2.441000ns)
+signal deltaExp :  std_logic_vector(7 downto 0);
+   -- timing of deltaExp: (c1, 6.823000ns)
+signal fullCancellation, fullCancellation_d1 :  std_logic;
+   -- timing of fullCancellation: (c1, 7.963000ns)
+signal expPreRound, expPreRound_d1 :  std_logic_vector(7 downto 0);
+   -- timing of expPreRound: (c1, 8.191000ns)
+signal expSigPreRound :  std_logic_vector(30 downto 0);
+   -- timing of expSigPreRound: (c2, 1.187000ns)
+signal roundUpBit :  std_logic;
+   -- timing of roundUpBit: (c2, 3.065000ns)
+signal expSigR :  std_logic_vector(30 downto 0);
+   -- timing of expSigR: (c2, 5.003000ns)
+signal resultIsZero :  std_logic;
+   -- timing of resultIsZero: (c2, 6.143000ns)
+signal resultIsInf :  std_logic;
+   -- timing of resultIsInf: (c2, 6.143000ns)
+signal constInf, constInf_d1, constInf_d2 :  std_logic_vector(30 downto 0);
+   -- timing of constInf: (c0, 0.000000ns)
+signal constNaN, constNaN_d1, constNaN_d2 :  std_logic_vector(30 downto 0);
+   -- timing of constNaN: (c0, 0.000000ns)
+signal expSigR2 :  std_logic_vector(30 downto 0);
+   -- timing of expSigR2: (c2, 6.767000ns)
+signal signR :  std_logic;
+   -- timing of signR: (c2, 6.767000ns)
+signal computedR :  std_logic_vector(31 downto 0);
+   -- timing of computedR: (c2, 6.767000ns)
 begin
    process(clk)
       begin
          if clk'event and clk = '1' then
-            expDiff_d1 <=  expDiff;
+            newX_d1 <=  newX;
             newY_d1 <=  newY;
-            expX_d1 <=  expX;
-            excY_d1 <=  excY;
-            signX_d1 <=  signX;
-            signY_d1 <=  signY;
+            expNewX_d1 <=  expNewX;
+            signNewX_d1 <=  signNewX;
+            signNewX_d2 <=  signNewX_d1;
+            signNewY_d1 <=  signNewY;
+            signNewY_d2 <=  signNewY_d1;
             EffSub_d1 <=  EffSub;
             EffSub_d2 <=  EffSub_d1;
-            EffSub_d3 <=  EffSub_d2;
-            EffSub_d4 <=  EffSub_d3;
-            EffSub_d5 <=  EffSub_d4;
-            EffSub_d6 <=  EffSub_d5;
-            EffSub_d7 <=  EffSub_d6;
-            sXsYExnXY_d1 <=  sXsYExnXY;
-            excRt_d1 <=  excRt;
-            excRt_d2 <=  excRt_d1;
-            excRt_d3 <=  excRt_d2;
-            excRt_d4 <=  excRt_d3;
-            excRt_d5 <=  excRt_d4;
-            excRt_d6 <=  excRt_d5;
-            excRt_d7 <=  excRt_d6;
-            signR_d1 <=  signR;
-            signR_d2 <=  signR_d1;
-            signR_d3 <=  signR_d2;
-            signR_d4 <=  signR_d3;
-            signR_d5 <=  signR_d4;
-            sticky_d1 <=  sticky;
-            nZerosNew_d1 <=  nZerosNew;
-            shiftedFrac_d1 <=  shiftedFrac;
-            extendedExpInc_d1 <=  extendedExpInc;
-            extendedExpInc_d2 <=  extendedExpInc_d1;
-            extendedExpInc_d3 <=  extendedExpInc_d2;
-            extendedExpInc_d4 <=  extendedExpInc_d3;
-            extendedExpInc_d5 <=  extendedExpInc_d4;
-            extendedExpInc_d6 <=  extendedExpInc_d5;
-            eqdiffsign_d1 <=  eqdiffsign;
-            eqdiffsign_d2 <=  eqdiffsign_d1;
-            fracR_d1 <=  fracR;
-            expR_d1 <=  expR;
-            excRt2_d1 <=  excRt2;
-            signR2_d1 <=  signR2;
-            signR2_d2 <=  signR2_d1;
+            xExpFieldZero_d1 <=  xExpFieldZero;
+            yExpFieldZero_d1 <=  yExpFieldZero;
+            xExpFieldAllOnes_d1 <=  xExpFieldAllOnes;
+            yExpFieldAllOnes_d1 <=  yExpFieldAllOnes;
+            xIsInfinity_d1 <=  xIsInfinity;
+            yIsInfinity_d1 <=  yIsInfinity;
+            xIsZero_d1 <=  xIsZero;
+            yIsZero_d1 <=  yIsZero;
+            resultIsNaN_d1 <=  resultIsNaN;
+            stickyLow_d1 <=  stickyLow;
+            fullCancellation_d1 <=  fullCancellation;
+            expPreRound_d1 <=  expPreRound;
+            constInf_d1 <=  constInf;
+            constInf_d2 <=  constInf_d1;
+            constNaN_d1 <=  constNaN;
+            constNaN_d2 <=  constNaN_d1;
          end if;
       end process;
-   excExpFracX <= X(33 downto 32) & X(30 downto 0);
-   excExpFracY <= Y(33 downto 32) & Y(30 downto 0);
-   swap <= '1' when excExpFracX < excExpFracY else '0';
-   -- exponent difference
-   eXmeY <= (X(30 downto 23)) - (Y(30 downto 23));
-   eYmeX <= (Y(30 downto 23)) - (X(30 downto 23));
-   expDiff <= eXmeY when swap = '0' else eYmeX;
-   -- input swap so that |X|>|Y|
+
+   -- Exponent difference and swap
+   expFracX <= X(30 downto 0);
+   expFracY <= Y(30 downto 0);
+   expXmExpY <= ('0' & X(30 downto 23)) - ('0'  & Y(30 downto 23)) ;
+   expYmExpX <= ('0' & Y(30 downto 23)) - ('0'  & X(30 downto 23)) ;
+   swap <= '0' when expFracX >= expFracY else '1';
    newX <= X when swap = '0' else Y;
    newY <= Y when swap = '0' else X;
-   -- now we decompose the inputs into their sign, exponent, fraction
-   expX<= newX(30 downto 23);
-   excX<= newX(33 downto 32);
-   excY<= newY(33 downto 32);
-   signX<= newX(31);
-   signY<= newY(31);
-   EffSub <= signX_d1 xor signY_d1;
-   sXsYExnXY <= signX & signY & excX & excY;
-   sdExnXY <= excX & excY;
-   fracY <= "000000000000000000000000" when excY_d1="00" else ('1' & newY_d1(22 downto 0));
-   -- Exception management logic
-   with sXsYExnXY_d1  select  
-   excRt <= "00" when "000000"|"010000"|"100000"|"110000",
-      "01" when "000101"|"010101"|"100101"|"110101"|"000100"|"010100"|"100100"|"110100"|"000001"|"010001"|"100001"|"110001",
-      "10" when "111010"|"001010"|"001000"|"011000"|"101000"|"111000"|"000010"|"010010"|"100010"|"110010"|"001001"|"011001"|"101001"|"111001"|"000110"|"010110"|"100110"|"110110", 
-      "11" when others;
-   signR<= '0' when (sXsYExnXY_d1="100000" or sXsYExnXY_d1="010000") else signX_d1;
-   shiftedOut <= '1' when (expDiff_d1 > 25) else '0';
-   shiftVal <= expDiff_d1(4 downto 0) when shiftedOut='0' else CONV_STD_LOGIC_VECTOR(26,5);
-   RightShifterComponent: RightShifterSticky24_by_max_26_Freq300_uid4
+   expDiff <= expXmExpY when swap = '0' else expYmExpX;
+   expNewX <= newX(30 downto 23);
+   expNewY <= newY(30 downto 23);
+   signNewX <= newX(31);
+   signNewY <= newY(31);
+   EffSub <= signNewX xor signNewY;
+   -- Special case dectection
+   xExpFieldZero <= '1' when expNewX="00000000" else '0';
+   yExpFieldZero <= '1' when expNewY="00000000" else '0';
+   xExpFieldAllOnes <= '1' when expNewX="11111111" else '0';
+   yExpFieldAllOnes <= '1' when expNewY="11111111" else '0';
+   xSigFieldZero <= '1' when newX_d1(22 downto 0)="00000000000000000000000" else '0';
+   ySigFieldZero <= '1' when newY_d1(22 downto 0)="00000000000000000000000" else '0';
+   xIsNaN <= xExpFieldAllOnes_d1 and not xSigFieldZero;
+   yIsNaN <= yExpFieldAllOnes_d1 and not ySigFieldZero;
+   xIsInfinity <= xExpFieldAllOnes_d1 and xSigFieldZero;
+   yIsInfinity <= yExpFieldAllOnes_d1 and ySigFieldZero;
+   xIsZero <= xExpFieldZero_d1 and xSigFieldZero;
+   yIsZero <= yExpFieldZero_d1 and ySigFieldZero;
+   bothSubNormals <=  xExpFieldZero and yExpFieldZero;
+   resultIsNaN <=  xIsNaN or yIsNaN  or  (xIsInfinity and yIsInfinity and EffSub_d1);
+   significandNewX <= not(xExpFieldZero) & newX(22 downto 0);
+   significandNewY <= not(yExpFieldZero) & newY(22 downto 0);
+
+   -- Significand alignment
+   allShiftedOut <= '1' when (expDiff >= 26) else '0';
+   rightShiftValue <= expDiff(4 downto 0) when allShiftedOut='0' else CONV_STD_LOGIC_VECTOR(26,5) ;
+   shiftCorrection <= '1' when (yExpFieldZero='1' and xExpFieldZero='0') else '0'; -- only other cases are: both normal or both subnormal
+   finalRightShiftValue <= rightShiftValue - ("0000" & shiftCorrection);
+   significandY00 <= significandNewY & "00";
+   RightShifterComponent: RightShifterSticky26_by_max_25_Freq100_uid4
       port map ( clk  => clk,
-                 S => shiftVal,
-                 X => fracY,
-                 R => shiftedFracY,
-                 Sticky => sticky);
-   fracYpad <= "0" & shiftedFracY;
-   EffSubVector <= (26 downto 0 => EffSub);
-   fracYpadXorOp <= fracYpad xor EffSubVector;
-   fracXpad <= "01" & (newX(22 downto 0)) & "00";
-   cInSigAdd <= EffSub_d2 and not sticky; -- if we subtract and the sticky was one, some of the negated sticky bits would have absorbed this carry 
-   fracAdder: IntAdder_27_Freq300_uid6
+                 S => finalRightShiftValue,
+                 X => significandY00,
+                 R => shiftedSignificandY,
+                 Sticky => stickyLow);
+   summandY <= ('0' & shiftedSignificandY) xor (26 downto 0 => EffSub);
+
+
+   -- Significand addition
+   summandX <= '0' & significandNewX & '0' & '0';
+   carryIn <= EffSub_d1 and not stickyLow;
+   fracAdder: IntAdder_27_Freq100_uid6
       port map ( clk  => clk,
-                 Cin => cInSigAdd,
-                 X => fracXpad,
-                 Y => fracYpadXorOp,
-                 R => fracAddResult);
-   fracSticky<= fracAddResult & sticky_d1; 
-   LZCAndShifter: Normalizer_Z_28_28_28_Freq300_uid8
+                 Cin => carryIn,
+                 X => summandX,
+                 Y => summandY,
+                 R => significandZ);
+
+   -- Cancellation detection, renormalization (see explanations in IEEEFPAdd.cpp) 
+   z1 <=  significandZ(26); -- bit of weight 1
+   z0 <=  significandZ(25); -- bit of weight 0
+   lzcZInput <= significandZ(26 downto 1);
+   IEEEFPAdd_8_23_Freq100_uid2LeadingZeroCounter: LZC_26_Freq100_uid8
       port map ( clk  => clk,
-                 X => fracSticky,
-                 Count => nZerosNew,
-                 R => shiftedFrac);
-   extendedExpInc<= ("0" & expX_d1) + '1';
-   updatedExp <= ("0" &extendedExpInc_d6) - ("00000" & nZerosNew_d1);
-   eqdiffsign <= '1' when nZerosNew="11111" else '0';
-   expFrac<= updatedExp & shiftedFrac_d1(26 downto 3);
-   stk<= shiftedFrac(2) or shiftedFrac(1) or shiftedFrac(0);
-   rnd<= shiftedFrac(3);
-   lsb<= shiftedFrac(4);
-   needToRound<= '1' when (rnd='1' and stk='1') or (rnd='1' and stk='0' and lsb='1')
-  else '0';
-   roundingAdder: IntAdder_34_Freq300_uid11
+                 I => lzcZInput,
+                 O => lzc);
+   leftShiftVal <= 
+      lzc when ((z1='1') or (z1='0' and z0='1' and xExpFieldZero_d1='1') or (z1='0' and z0='0' and xExpFieldZero_d1='0' and lzc<=expNewX_d1)  or (xExpFieldZero_d1='0' and lzc>=26) ) 
+      else (expNewX_d1(4 downto 0)) when (xExpFieldZero_d1='0' and (lzc < 26) and (("000"&lzc)>=expNewX_d1)) 
+       else "0000"&'1';
+   LeftShifterComponent: LeftShifter27_by_max_26_Freq100_uid10
       port map ( clk  => clk,
-                 Cin => needToRound,
-                 X => expFrac,
-                 Y => "0000000000000000000000000000000000",
-                 R => RoundedExpFrac);
-   -- possible update to exception bits
-   upExc <= RoundedExpFrac(33 downto 32);
-   fracR <= RoundedExpFrac(23 downto 1);
-   expR <= RoundedExpFrac(31 downto 24);
-   exExpExc <= upExc & excRt_d6;
-   with exExpExc  select  
-   excRt2<= "00" when "0000"|"0100"|"1000"|"1100"|"1001"|"1101",
-      "01" when "0001",
-      "10" when "0010"|"0110"|"1010"|"1110"|"0101",
-      "11" when others;
-   excR <= "00" when (eqdiffsign_d2='1' and EffSub_d7='1'  and not(excRt_d7="11")) else excRt2_d1;
-   signR2 <= '0' when (eqdiffsign='1' and EffSub_d5='1') else signR_d5;
-   computedR <= excR & signR2_d2 & expR_d1 & fracR_d1;
+                 S => leftShiftVal,
+                 X => significandZ,
+                 R => normalizedSignificand);
+   significandPreRound <= normalizedSignificand(25 downto 3); -- remove the implicit zero/one
+   lsb <= normalizedSignificand(3);
+   roundBit <= normalizedSignificand(2);
+   stickyBit <= stickyLow_d1 or  normalizedSignificand(1)or  normalizedSignificand(0);
+   deltaExp <=    -- value to subtract to exponent for normalization
+      "00000000" when ( (z1='0' and z0='1' and xExpFieldZero_d1='0')
+          or  (z1='0' and z0='0' and xExpFieldZero_d1='1') )
+      else "11111111" when ( (z1='1')  or  (z1='0' and z0='1' and xExpFieldZero_d1='1'))
+      else ("000" & lzc)-'1' when (z1='0' and z0='0' and xExpFieldZero_d1='0' and lzc<=expNewX_d1 and lzc<26)      else expNewX_d1;
+   fullCancellation <= '1' when (lzc>=26) else '0';
+   expPreRound <= expNewX_d1 - deltaExp; -- we may have a first overflow here
+   expSigPreRound <= expPreRound_d1 & significandPreRound; 
+   -- Final rounding, with the mantissa overflowing in the exponent  
+   roundUpBit <= '1' when roundBit='1' and (stickyBit='1' or (stickyBit='0' and lsb='1')) else '0';
+   roundingAdder: IntAdder_31_Freq100_uid13
+      port map ( clk  => clk,
+                 Cin => roundUpBit,
+                 X => expSigPreRound,
+                 Y => "0000000000000000000000000000000",
+                 R => expSigR);
+   -- Final packing
+   resultIsZero <= '1' when (fullCancellation_d1='1' and expSigR(30 downto 23)="00000000") else '0';
+   resultIsInf <= '1' when resultIsNaN_d1='0' and (((xIsInfinity_d1='1' and yIsInfinity_d1='1'  and EffSub_d2='0')  or (xIsInfinity_d1='0' and yIsInfinity_d1='1')  or (xIsInfinity_d1='1' and yIsInfinity_d1='0')  or  (expSigR(30 downto 23)="11111111"))) else '0';
+   constInf <= "11111111" & "00000000000000000000000";
+   constNaN <= "1111111111111111111111111111111";
+   expSigR2 <= constInf_d2 when resultIsInf='1' else constNaN_d2 when resultIsNaN_d1='1' else expSigR;
+   signR <= '0' when ((resultIsNaN_d1='1'  or (resultIsZero='1' and xIsInfinity_d1='0' and yIsInfinity_d1='0')) and (xIsZero_d1='0' or yIsZero_d1='0' or (signNewX_d2 /= signNewY_d2)) )  else signNewX_d2;
+   computedR <= signR & expSigR2;
    R <= computedR;
 end architecture;
 
