@@ -50,8 +50,8 @@ expectedVec =
   $(listToVecTH [0.0::Float,0.0, 0.0, 0.0, 0.0,3.0, -3.5, 1.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0])
   
 
-testBench :: Signal XilinxSystem Bool
-testBench = done
+testBenchFMA :: Signal XilinxSystem Bool
+testBenchFMA = done
   where
     testInput =
       stimuliGenerator clk rst inputVec

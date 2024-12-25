@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -W #-} 
 module Lexer (
     InfoEntity(..),
     keywords,
@@ -17,7 +18,7 @@ module Lexer (
 import System.IO
 import Prelude
 import qualified Data.List as L
-import Data.Char (isSpace, isDigit)
+import Data.Char (isSpace, isDigit, isAlphaNum)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 data InfoEntity = InfoEntity {
@@ -28,18 +29,7 @@ data InfoEntity = InfoEntity {
     outsig::Maybe [String]
     } deriving(Show)
 
-{-class AnyNothing a where
-    hasAnyNothing :: a -> Bool
--- Make InfoEntity an instance of AnyNothing
-instance AnyNothing InfoEntity where
-    hasAnyNothing (InfoEntity name freq pipedep insig outsig) =
-        any isNothing [name, freq, pipedep, insig, outsig]
 
--- Helper function to check if Maybe value is Nothing
-isNothing :: Maybe a -> Bool
-isNothing Nothing = True
-isNothing _       = False
--}
 keywords :: [String]
 keywords = ["Input", "Output", "frequency", "Pipeline"]
 -- Define an empty or default InfoEntity with all fields as Nothing
@@ -76,27 +66,33 @@ afterColon (Just wordList) =
         []       -> Nothing            -- No colon found, return Nothing
         (_:rest) -> Just rest           -- Skip the word with the colon and return the rest
 
+-- Checks if a word contains no special characters
+hasNoSpecialChars :: String -> Bool
+hasNoSpecialChars = all isAllowedChar
+  where
+    isAllowedChar c = isAlphaNum c || elem c ['-','_']  -- Add any extra allowed characters here
 updateInfoEntity :: String -> Maybe InfoEntity -> Maybe InfoEntity
 updateInfoEntity _ Nothing = Nothing
-updateInfoEntity  comment (Just infoen) =
+updateInfoEntity  comment (Just infoen) = 
     if ( containsSpace comment) ==  False then
-        Just infoen
+        Just infoen 
     else
         let wordList = words comment
         in if (length wordList) ==  1  then
             let singleword = head wordList
-            in if (elem '('  singleword ) ==  False then
+            in if hasNoSpecialChars singleword then
                 Just infoen{name = Just singleword}
-            else
+            else 
                 Just infoen
         else
-            case [word | word <- keywords, word `elem` wordList] of
+            case [word | word <- keywords, elem word wordList] of
                 [] -> Just infoen
                 ["Input"] -> Just infoen {insig =  afterColon (Just wordList)}
                 ["Output"] -> Just infoen {outsig = afterColon (Just wordList)}
                 ["Pipeline"] -> Just infoen { pipedep = fmap (read . filter isDigit . concat) (afterColon (Just wordList)) }
                 ["frequency"] -> Just infoen { freq = fmap (read . filter isDigit . concat) (afterColon (Just wordList)) }
-
+                [_,_] -> Nothing
+                _ -> Nothing
 makeListVHDLcomments :: String -> Maybe [String]
 makeListVHDLcomments vhdlcontent =
    Just $ mapMaybe getVHDLComment  [ vhdlcomment | vhdlcomment <- (lines vhdlcontent), isVHDLcomment vhdlcomment]
@@ -130,24 +126,31 @@ convertMaybeToInt = fromMaybe 0
 updateInputPortInfoEntity :: Maybe [String] -> InfoEntity -> InfoEntity
 updateInputPortInfoEntity inp infoen = infoen {insig = inp}
 
+-- Function to find positions of "entity" from the tail
+findEntityPositions :: [String] -> [Int]
+findEntityPositions lst =
+  let reversed = reverse lst                          -- Reverse the list to start from the tail
+      positions = [i | (i, s) <- zip [0..] reversed, "entity" `L.isInfixOf` s] -- Get positions in reversed list
+  in map (\i -> length lst - 1 - i) positions         -- Convert to original indices
+
 processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m (Maybe InfoEntity)
 processFile process path = do
     handle <- liftIO $ openFile path ReadMode       -- Open the file with liftIO
     contents <- liftIO $ hGetContents handle        -- Read the file's contents
-    -- Force the file contents to be read before closing the handle
-    
 
+    let lines_content = lines contents 
     -- Initial InfoEntity (can be Nothing or some default value)
     let initialEntity = emptyInfoEntity
 
     -- Apply the processing function
     let result = process (makeListVHDLcomments contents) (Just initialEntity)
-
-    let partialPortInputs = extractPortNamespartial(last (filter containsPort (lines contents)) )
+    let len_ent = findEntityPositions (filter ((\line -> "component " `L.isInfixOf` line || "entity " `L.isInfixOf` line)) (lines_content))
+    let partialPortInputs =  extractPortNamespartial(((filter containsPort (lines_content)) !! (head len_ent)))
     -- Process the result and return an Int
 
     liftIO $ print result
     liftIO $ hClose handle  -- Close the file handle
+    
     case result of
         Just info -> do     
             let inports = insig info       

@@ -43,7 +43,7 @@ import Clash.Netlist.BlackBox.Types
 --import qualified Clash.Netlist.Id as Id
 import Clash.Netlist.Types
   (BlackBox (..), BlackBoxContext, EntityOrComponent(..), TemplateFunction(..))
-import qualified Clash.Netlist.Types as N
+import qualified Clash.Netlist.Types as NT
 import qualified Clash.Primitives.DSL as DSL
 import qualified Clash.Netlist.Id as Id
 
@@ -298,7 +298,7 @@ generateBlackBoxTemplateFunction infoen = do
                                             (AppE
                                                (AppE
                                                   (AppE
-                                                     (AppE (VarE 'DSL.instDecl) (ConE 'N.Empty))
+                                                     (AppE (VarE 'DSL.instDecl) (ConE 'NT.Empty))
                                                      (AppE
                                                         (VarE 'Id.unsafeMake)
                                                         (VarE entityNameName)))
@@ -446,7 +446,7 @@ generateBlackBox infoen = do
                                             (AppE
                                                (AppE
                                                   (AppE
-                                                     (AppE (VarE 'DSL.instDecl) (ConE 'N.Empty))
+                                                     (AppE (VarE 'DSL.instDecl) (ConE 'NT.Empty))
                                                      (AppE
                                                         (VarE 'Id.unsafeMake)
                                                         (VarE entityNameName)))
@@ -576,7 +576,7 @@ generateBlackBoxTemplateFunctionProd infoen = do
                      (AppE (VarE 'Prelude.map) (VarE 'Prelude.fst)) 
                      (AppE (VarE 'DSL.tInputs) (VarE bbCtx))),
                BindS (ListP [VarP result]) (AppE (VarE 'DSL.tResults) (VarE bbCtx)),
-               BindS (ConP 'N.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))], 
+               BindS (ConP 'NT.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))], 
                DoE
                   Nothing 
                   [BindS
@@ -716,7 +716,7 @@ generateBlackBoxProd infoen = do
                      (AppE (VarE 'Prelude.map) (VarE 'Prelude.fst)) 
                      (AppE (VarE 'DSL.tInputs) (VarE bbCtx))),
                BindS (ListP [VarP result]) (AppE (VarE 'DSL.tResults) (VarE bbCtx)),
-               BindS (ConP 'N.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))], 
+               BindS (ConP 'NT.Product [] [WildP,WildP,VarP resTyps]) (AppE (VarE 'DSL.ety) (VarE result))], 
                DoE
                   Nothing 
                   [BindS

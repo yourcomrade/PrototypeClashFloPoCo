@@ -24,7 +24,7 @@ import Clash.Netlist.BlackBox.Types
 --import qualified Clash.Netlist.Id as Id
 import Clash.Netlist.Types
   (BlackBox (..), BlackBoxContext, EntityOrComponent(..), TemplateFunction(..), HWType, bbResults)
-import qualified Clash.Netlist.Types as N
+import qualified Clash.Netlist.Types as NT
 import qualified Clash.Primitives.DSL as DSL
 
 import Data.Maybe (fromMaybe, isJust, fromJust)
@@ -260,7 +260,7 @@ fmaFloat
   :: forall n .
   Clock XilinxSystem
   -> DSignal XilinxSystem n Float
-  -> DSignal XilinxSystem n  Float
+  -> DSignal XilinxSystem n Float
   -> DSignal XilinxSystem n Float
   -> DSignal XilinxSystem n Bit
   -> DSignal XilinxSystem n Bit
