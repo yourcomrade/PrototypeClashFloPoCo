@@ -28,7 +28,7 @@ import qualified Clash.Netlist.Types as NT
 import qualified Clash.Primitives.DSL as DSL
 
 import Data.Maybe (fromMaybe, isJust, fromJust)
-
+import InfoEn
 import qualified FloPoCoCall as FPCC
 import qualified Clash.Netlist.Id as Id
 import Clash.Promoted.Nat.TH(decLiteralD)

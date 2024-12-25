@@ -1,33 +1,24 @@
 {-# OPTIONS_GHC -W #-} 
 module Lexer (
-    InfoEntity(..),
-    keywords,
-    isVHDLcomment,
-    getVHDLComment,
-    containsSpace,
-    afterColon,
-    convertMaybeToInt,
-    updateInfoEntity,
-    makeListVHDLcomments,
+    --keywords,
+    --isVHDLcomment,
+    --getVHDLComment,
+    --containsSpace,
+    --afterColon,
+    --updateInfoEntity,
+    --makeListVHDLcomments,
     getLastInfoEntity,
-    processFile,
-    lengthMaybeStrings,
+    processVHDLFile,
 
 ) where
-
+import InfoEn
 import System.IO
 import Prelude
 import qualified Data.List as L
 import Data.Char (isSpace, isDigit, isAlphaNum)
 import Data.Maybe (fromMaybe, mapMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-data InfoEntity = InfoEntity {
-    name:: Maybe String,
-    freq :: Maybe Int,
-    pipedep ::Maybe Int,
-    insig:: Maybe [ String],
-    outsig::Maybe [String]
-    } deriving(Show)
+
 
 
 keywords :: [String]
@@ -42,23 +33,23 @@ emptyInfoEntity = InfoEntity {
     outsig   = Nothing
 }
 
-lengthMaybeStrings :: Maybe [String] -> Int
-lengthMaybeStrings (Just strs) = length strs
-lengthMaybeStrings Nothing       = 0 
 
+-- Check if the string is a valid VHDL comment
 isVHDLcomment :: String -> Bool
 isVHDLcomment str  | length str > 2 = if take 2 str == "--" then True else False
                    | otherwise = False
+-- Get the content of a VHDL comment
 getVHDLComment :: String -> Maybe String
 getVHDLComment str | length str > 2 = if take 2 str == "--" then Just $ drop 2 str else Nothing
                    | otherwise = Nothing
-
+-- Check if string has any space
 containsSpace :: String -> Bool
 containsSpace str = any isSpace str
-
+-- Check if a VHDL string contains port
 containsPort :: String -> Bool
 containsPort str = "port (" `L.isInfixOf` str || "port(" `L.isInfixOf` str
 
+-- Get the string content after colon
 afterColon :: Maybe [String] -> Maybe [String]
 afterColon Nothing = Nothing
 afterColon (Just wordList) =
@@ -71,6 +62,8 @@ hasNoSpecialChars :: String -> Bool
 hasNoSpecialChars = all isAllowedChar
   where
     isAllowedChar c = isAlphaNum c || elem c ['-','_']  -- Add any extra allowed characters here
+
+-- Update the InfoEntity to get all necessary information: input signal names, output signal names, pipeline depth, and frequency
 updateInfoEntity :: String -> Maybe InfoEntity -> Maybe InfoEntity
 updateInfoEntity _ Nothing = Nothing
 updateInfoEntity  comment (Just infoen) = 
@@ -93,14 +86,17 @@ updateInfoEntity  comment (Just infoen) =
                 ["frequency"] -> Just infoen { freq = fmap (read . filter isDigit . concat) (afterColon (Just wordList)) }
                 [_,_] -> Nothing
                 _ -> Nothing
+
+-- Get all VHDL comments from the content of the VHDL file
 makeListVHDLcomments :: String -> Maybe [String]
 makeListVHDLcomments vhdlcontent =
    Just $ mapMaybe getVHDLComment  [ vhdlcomment | vhdlcomment <- (lines vhdlcontent), isVHDLcomment vhdlcomment]
 
---makeListVHDLInfoEntities :: Maybe [String] -> Maybe [InfoEntity]
---makeListVHDLInfoEntities vhdlcomments = do
-
-getLastInfoEntity :: Maybe [String] -> Maybe InfoEntity -> Maybe InfoEntity
+-- |Function to extract the last entity from VHDL comment
+getLastInfoEntity :: 
+    Maybe [String] -- ^ List of VHDL comment
+    -> Maybe InfoEntity -- ^ InfoEntity need to be update
+    -> Maybe InfoEntity -- ^ InfoEntity after update
 getLastInfoEntity _ Nothing = Nothing
 getLastInfoEntity Nothing _ = Nothing
 getLastInfoEntity (Just []) (Just infoen) = Just infoen
@@ -120,9 +116,8 @@ extractPortNamespartial input =
       -- Replace commas with spaces to split names correctly
       names = words (map (\c -> if c == ',' then ' ' else c) beforeColon)
   in names 
-convertMaybeToInt :: Maybe Int -> Int
-convertMaybeToInt = fromMaybe 0
 
+-- Function to update the input signal names of InfoEntity
 updateInputPortInfoEntity :: Maybe [String] -> InfoEntity -> InfoEntity
 updateInputPortInfoEntity inp infoen = infoen {insig = inp}
 
@@ -133,8 +128,12 @@ findEntityPositions lst =
       positions = [i | (i, s) <- zip [0..] reversed, "entity" `L.isInfixOf` s] -- Get positions in reversed list
   in map (\i -> length lst - 1 - i) positions         -- Convert to original indices
 
-processFile ::(MonadIO m) => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -> FilePath -> m (Maybe InfoEntity)
-processFile process path = do
+-- |Function to process FloPoCo VHDL file and extract the main entity and its information
+processVHDLFile ::(MonadIO m) 
+    => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -- ^Function to process and update InfoEntity, in this library is getLastInfoEntity
+    -> FilePath -- ^FilePath: The path of FloPoCo VHDL file
+    -> m (Maybe InfoEntity) -- ^InfoEntity
+processVHDLFile process path = do
     handle <- liftIO $ openFile path ReadMode       -- Open the file with liftIO
     contents <- liftIO $ hGetContents handle        -- Read the file's contents
 
@@ -144,15 +143,18 @@ processFile process path = do
 
     -- Apply the processing function
     let result = process (makeListVHDLcomments contents) (Just initialEntity)
-    let len_ent = findEntityPositions (filter ((\line -> "component " `L.isInfixOf` line || "entity " `L.isInfixOf` line)) (lines_content))
+    -- We only need to count number of "entity SomeRandomName" and "component SomeRandomName2" not "end entity;" and "end component;" 
+    let ent_and_comp = filter (\line -> "component " `L.isInfixOf` line || "entity " `L.isInfixOf` line) lines_content
+    let len_ent = findEntityPositions (ent_and_comp)
     let partialPortInputs =  extractPortNamespartial(((filter containsPort (lines_content)) !! (head len_ent)))
     -- Process the result and return an Int
 
     liftIO $ print result
     liftIO $ hClose handle  -- Close the file handle
-    
+    -- Analyze the result
     case result of
         Just info -> do     
+            -- Add remaining port input signals: clk, rst(if user enable FloPoCo to have resest signal) 
             let inports = insig info       
             let updateinports = fmap (partialPortInputs ++) inports
             let info1 = updateInputPortInfoEntity updateinports info
@@ -160,11 +162,6 @@ processFile process path = do
             return  (Just info1)
         Nothing   -> return Nothing
     
-
-
-
-
-    -- Return the number of lines in the file as the Int result
 
 
 

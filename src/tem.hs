@@ -1,10 +1,11 @@
+
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-
+{-# OPTIONS_HADDOCK show-extensions #-}
 
 module Tem (
     getPipeDep,
@@ -53,7 +54,7 @@ import Control.Monad.State.Lazy (State)
 import Text.Show.Pretty(ppShow)
 import Data.Char (toLower)
 import Data.Maybe (fromMaybe)
-
+import InfoEn
 
 floPoCoPath = "/home/minh/flopoco/build/bin/flopoco"
 args = ["frequency=100", "target=Zynq7000", "IEEEFPAdd", "wE=8", "wF=23","name=plusFloat", "outputFile=flopocoAdd.vhdl","registerLargeTables=1"]
@@ -80,7 +81,7 @@ genFloPoCoInfoEntity floPoCoPathName argsName fileName = do
     if "Error" `elem` lines output
     then fail "Error in FloPoCo output"
     else do
-        result <- processFile getLastInfoEntity fileName
+        result <- processVHDLFile getLastInfoEntity fileName
         liftIO $ print result
         case result of
             Just infoentity -> [| $(liftInfoEntity infoentity) |]  -- Lift InfoEntity as expression
@@ -119,6 +120,9 @@ flopocoPrim fprimName ftfName = let
           templateFunction: #{tfName}
           workInfo: Always
     |]
+
+convertMaybeToInt :: Maybe Int -> Int
+convertMaybeToInt = fromMaybe 0
 
  -- Function to generate a black box function with dynamic names
 generateBlackBoxFunction :: String -> Q [Dec]
@@ -198,11 +202,11 @@ toLowercaseList = map lowercaseFirst
 
 generateBlackBoxTemplateFunction :: InfoEntity -> Q [Dec]
 generateBlackBoxTemplateFunction infoen = do
-    let inputNamesListstr = maybe [] id (insig infoen)
-    let outputNamesListstr = maybe [] id (outsig infoen)
+    let inputNamesListstr = fromMaybe [] (insig infoen)
+    let outputNamesListstr = fromMaybe [] (outsig infoen)
     let inputNamesList = (map mkName  ( toLowercaseList inputNamesListstr))
     let outputNamesList = (map mkName (toLowercaseList outputNamesListstr))
-    let entityNamestr = maybe "" id (name infoen)
+    let entityNamestr = fromMaybe "" (name infoen)
     let entityNameName = mkName (entityNamestr)
     let bbtfName = mkName (entityNamestr <> "BBTF")
     let entityNameInststr = (entityNamestr <> "_inst")
@@ -329,6 +333,10 @@ generateBlackBoxTemplateFunction infoen = do
                          (ConT ''Data.Text.Prettyprint.Doc.Extra.Doc)))))    
 
     return [funSig, funDec]
+
+lengthMaybeStrings :: Maybe [String] -> Int
+lengthMaybeStrings (Just strs) = length strs
+lengthMaybeStrings Nothing       = 0 
 
 generateBlackBox:: InfoEntity -> Q [Dec]
 generateBlackBox infoen = do

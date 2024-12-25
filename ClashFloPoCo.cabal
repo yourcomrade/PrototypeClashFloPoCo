@@ -145,7 +145,8 @@ library
         Lexer,
         FlopoCo,
         Help,
-        Tem
+        Tem,
+        InfoEn
 
 
     -- Modules included in this library but not exported.
