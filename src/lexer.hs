@@ -1,3 +1,8 @@
+{- |
+  Copyright   :  (C) 2024, QBayLogic B.V.
+  License     :  BSD2
+  Maintainer  :  QBayLogic B.V. <devops@qbaylogic.com>
+-}
 {-# OPTIONS_GHC -W #-} 
 module Lexer (
     --keywords,
@@ -16,10 +21,10 @@ import System.IO
 import Prelude
 import qualified Data.List as L
 import Data.Char (isSpace, isDigit, isAlphaNum)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe ( mapMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 
-
+-- |This module contains functions to parse and get necessary information from FloPoCo VHDL file
 
 keywords :: [String]
 keywords = ["Input", "Output", "frequency", "Pipeline"]

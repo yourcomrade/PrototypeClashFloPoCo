@@ -3,8 +3,8 @@ module Test where
 import Clash.Explicit.Prelude
 import Clash.Explicit.Testbench
 import Clash.Class.BitPack
-import FlopoCo 
-
+import FloPoCoExample
+{-
 topEntity ::
   Clock XilinxSystem ->
   DSignal XilinxSystem 0 Float ->
@@ -12,16 +12,35 @@ topEntity ::
   DSignal XilinxSystem 0 Float ->
   DSignal XilinxSystem 0 Float ->
   DSignal XilinxSystem 0 Float ->
-  DSignal XilinxSystem (0 + N + N2 + N +N3) Float
-topEntity clk x y z w m = expFloat clk (plusFloat clk (delayI undefined enableGen clk m) aXb)
+  DSignal XilinxSystem (0 + Nplus + Nfma + Nplus +Nexp) Float
+topEntity clk x y z w m = expFloatExample clk (plusFloatExample clk (delayI undefined enableGen clk m) aXb)
     where
-        a = delayI undefined enableGen clk (plusFloat clk x y)
-        b = delayI undefined enableGen clk (plusFloat clk z w)
-        aXb = fmaFloat clk a b c negab negc rnd
+        a = delayI undefined enableGen clk (plusFloatExample clk x y)
+        b = delayI undefined enableGen clk (plusFloatExample clk z w)
+        aXb = fmaFloatExample clk a b c negab negc rnd
         c = pure (fromIntegral 0)
         negab = pure (fromIntegral 0)
         negc = pure (fromIntegral 0)
         rnd =pure (fromIntegral 0)
+-}
+{-
+topEntity ::
+  Clock XilinxSystem ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem 0 Float ->
+  DSignal XilinxSystem (0 + Nplus) Float 
+topEntity clk a b = plusFloatExample clk a b
+{-# ANN topEntity
+  (Synthesize
+    { t_name   = "topEntity"
+    , t_inputs = [ PortName "clk"
+                 , PortName "a"
+                 , PortName "b"
+                 ]
+    , t_output = PortName "result"
+    }) #-}
+
+-}
 {-
 inputVec :: Vec 4 (Float, Float, Float, Bit, Bit, BitVector 2)
 inputVec =
@@ -57,7 +76,7 @@ testBenchFMA = done
       stimuliGenerator clk rst inputVec
     expectedOutput =
       outputVerifier' clk rst expectedVec
-    done = expectedOutput (toSignal $ fmaFloat clk a b c negab negc rnd)
+    done = expectedOutput (toSignal $ fmaFloatExample clk a b c negab negc rnd)
     clk = tbClockGen (not <$> done)
     rst = resetGen
     -- Unbundle the test input into individual signals
@@ -68,7 +87,7 @@ testBenchFMA = done
       where
         (ia, ib, ic, inegab, inegc, irnd) = unbundle testInput
 
-{-
+
 -- VGA Test Top Module
 topEntity
   :: Clock XilinxSystem   -- ^ System Clock (100 MHz)
@@ -106,4 +125,3 @@ topEntity clk rst en sw = (hsync, vsync, rgbOut)
                  ]
     , t_output = PortProduct "" [PortName "hsync", PortName "vsync", PortName "rgb"]
     }) #-}
--}

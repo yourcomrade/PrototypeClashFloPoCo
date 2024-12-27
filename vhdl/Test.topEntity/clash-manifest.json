@@ -1,6 +1,6 @@
 {
     "components": [
-        "topEntity"
+        "VGAtopEntity"
     ],
     "dependencies": {
         "transitive": []
@@ -30,75 +30,77 @@
     },
     "files": [
         {
-            "name": "topEntity.sdc",
-            "sha256": "c8f553d0b52582658a3f05c915cf3e923a8cddbc3792ed01ebd8aa1dc1fd87cf"
+            "name": "VGAtopEntity.sdc",
+            "sha256": "13d4c1aafcc09a84d81d3b60d513cb901384a10e27e5a5a16572a600f15895f3"
         },
         {
-            "name": "Test_topEntity_types.vhdl",
-            "sha256": "b235ef5336b4ec516bda721124ee1d923921bd5227de11e70038c071dca25cc3"
+            "name": "VGAtopEntity_types.vhdl",
+            "sha256": "52ac52d683fa258f1dfd6d9123147d252907f0ee09e302d599ab75eb58e7a338"
         },
         {
-            "name": "topEntity.vhdl",
-            "sha256": "d4917b7879497c872ea4e89a7c376d1ae864c51c6733a936eaf1de11c90693ce"
+            "name": "VGAtopEntity.vhdl",
+            "sha256": "aeba929be5daeb06e26e45f2d2c3e2f47d66edbcb779df11be493defee56eaf1"
         }
     ],
     "flags": [
         20,
         20
     ],
-    "hash": "fc7b04cf5651296224b2edec78cab09b92348597f76fb097f1495b3cb99627e8",
+    "hash": "a2ced2510ce5a8e3473565b19c73060fa298b5e6eccc1b208d13fbbfb79cc333",
     "top_component": {
-        "name": "topEntity",
+        "name": "VGAtopEntity",
         "ports_flat": [
             {
                 "direction": "in",
                 "domain": "XilinxSystem",
                 "is_clock": true,
-                "name": "carg",
-                "type_name": "carg.Test_topEntity_types.clk_XilinxSystem",
+                "name": "clk",
+                "type_name": "clk.VGAtopEntity_types.clk_XilinxSystem",
+                "width": 1
+            },
+            {
+                "direction": "in",
+                "domain": "XilinxSystem",
+                "is_clock": false,
+                "name": "rst",
+                "type_name": "rst.VGAtopEntity_types.rst_XilinxSystem",
+                "width": 1
+            },
+            {
+                "direction": "in",
+                "domain": "XilinxSystem",
+                "is_clock": false,
+                "name": "en",
+                "type_name": "en.VGAtopEntity_types.en_XilinxSystem",
                 "width": 1
             },
             {
                 "direction": "in",
                 "is_clock": false,
-                "name": "carg_0",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
-            },
-            {
-                "direction": "in",
-                "is_clock": false,
-                "name": "carg_1",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
-            },
-            {
-                "direction": "in",
-                "is_clock": false,
-                "name": "carg_2",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
-            },
-            {
-                "direction": "in",
-                "is_clock": false,
-                "name": "carg_3",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
-            },
-            {
-                "direction": "in",
-                "is_clock": false,
-                "name": "carg_4",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "name": "sw",
+                "type_name": "std_logic_vector(11 downto 0)",
+                "width": 12
             },
             {
                 "direction": "out",
                 "is_clock": false,
-                "name": "result",
-                "type_name": "std_logic_vector(31 downto 0)",
-                "width": 32
+                "name": "hsync",
+                "type_name": "std_logic",
+                "width": 1
+            },
+            {
+                "direction": "out",
+                "is_clock": false,
+                "name": "vsync",
+                "type_name": "std_logic",
+                "width": 1
+            },
+            {
+                "direction": "out",
+                "is_clock": false,
+                "name": "rgb",
+                "type_name": "std_logic_vector(11 downto 0)",
+                "width": 12
             }
         ]
     },

@@ -2,30 +2,67 @@
   Copyright   :  (C) 2024, QBayLogic B.V.
   License     :  BSD2
   Maintainer  :  QBayLogic B.V. <devops@qbaylogic.com>
-  
+  This module contains example about InfoEntity used in the 
+  module FloPoCoExample 
 -}
 
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 module Help (
-   infoEn,
-   infoEn2,
-   infoEn3,
-   infoEnVGAController,
+   infoEnPlusExample,
+   infoEnFMAExample,
+   infoEnExpExample,
+   infoEnVGAControllerExample,
     
 ) where
-import Tem 
+import GenTemDSL 
 import InfoEn
 import Prelude
-infoEn = $(genFloPoCoInfoEntity floPoCoPath args filePath)
-infoEn2 = $(genFloPoCoInfoEntity floPoCoPath args2 filePath2)
-infoEn3 = $(genFloPoCoInfoEntity floPoCoPath args3 filePath3)
-infoEnVGAController :: InfoEntity
-infoEnVGAController = InfoEntity {
+import Helpargs
+-- |This InfoEntity is used for blackbox of the plusFloatExample
+--
+-- ==== __Example:__
+-- > infoEnPlusExample = $(genFloPoCoInfoEntity floPoCoPathExample argsPlusExample filePlusExample)
+--
+infoEnPlusExample :: InfoEntity
+infoEnPlusExample = InfoEntity {
+    name = Just "plusFloat",
+    freq = Just 100,
+    pipedep = Just 2,
+    insig = Just ["clk", "X", "Y"],
+    outsig = Just ["R"]
+}
+-- |This InfoEntity is used for blackbox of the fmaFloatExample
+--
+-- ==== __Example:__
+-- > infoEnFMAExample = $(genFloPoCoInfoEntity floPoCoPathExample argsFMAExample fileFMAExample)
+--
+infoEnFMAExample :: InfoEntity
+infoEnFMAExample = InfoEntity {
+    name = Just "fmaFloat", 
+    freq = Just 100, 
+    pipedep = Just 1, 
+    insig = Just ["clk","A","B","C","negateAB","negateC","RndMode"], 
+    outsig = Just ["R"]
+}
+
+-- |This InfoEntity is used for blackbox of the expFloatExample
+-- 
+-- ==== __Example:__
+-- > infoEnExpExample = $(genFloPoCoInfoEntity floPoCoPathExample argsExpExample fileExpExample)
+--
+infoEnExpExample :: InfoEntity
+infoEnExpExample = InfoEntity {
+    name = Just "expFloat", 
+    freq = Just 100, 
+    pipedep = Just 3, 
+    insig = Just ["clk","X"], 
+    outsig = Just ["R"]
+}
+-- |This InfoEntity is used for blackbox of the vga_controller
+infoEnVGAControllerExample :: InfoEntity
+infoEnVGAControllerExample = InfoEntity {
     name     = Just "vga_controller",
     freq     = Just 100,
     pipedep  = Nothing,

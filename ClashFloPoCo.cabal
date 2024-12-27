@@ -121,7 +121,9 @@ common common-options
     base,
     Cabal,
     bitvec,
-
+    array,
+    ghc-prim,
+    data-default-class,
     -- clash-prelude will set suitable version bounds for the plugins
     clash-prelude >= 1.8.1 && < 1.10,
     clash-lib,
@@ -143,10 +145,12 @@ library
     -- Modules exported by the library.
     exposed-modules:  FloPoCoCall,
         Lexer,
-        FlopoCo,
+        FloPoCoExample,
         Help,
-        Tem,
-        InfoEn
+        GenTemDSL,
+        InfoEn,
+        Helpargs,
+        Tutorial 
 
 
     -- Modules included in this library but not exported.
