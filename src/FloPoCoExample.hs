@@ -362,7 +362,7 @@ vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefin
 {-# OPAQUE vga_controller #-}
 $(genBlackBoxProd infoEnVGAControllerExample)
 
-{-# ANN vga_controllerExample (let
+{-# ANN vga_controller (let
       primName = show 'vga_controller
       tfName = show 'vga_controllerBBF
     in

@@ -1819,7 +1819,136 @@ vga_controllerBBTF vga_controller bbCtx
 @
 
 Compared to the BlackBoxTemplateFunction plusFloatBBTF, we can see 3 main differences. 
-The first thing to notice is the extra one comparision in the pattern matching. 
+The first thing to notice is the extra one comparision in the pattern matching. This extra comparision is to take
+out the type of output signals from the Haskell function as resTyps.  
+The next thing is to declare new signals and map them to list of the output signals
+
+> compOuts = L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps
+> declares <- mapM (\ (name, typ) -> DSL.declare name typ)
+>                  (L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps)
+> let [video_on, hsync, vsync, p_tick, x, y] = declares
+
+Finally, after declaring new output signals and mapping them to the hardware type, user need to contruct a port 
+product to group all hardware output signals into 1 software signal. 
+
+> pure [DSL.constructProduct (DSL.ety result) [video_on, hsync, vsync, p_tick, x, y]]
+
+Here is the full example hardware synthesizable Clash code:
+
+@
+{\-\# LANGUAGE OverloadedStrings, TemplateHaskell, BangPatterns \#\-\}
+import Data.String.Interpolate (__i)
+import Data.Text.Prettyprint.Doc.Extra (Doc)
+import GHC.Stack (HasCallStack)
+import Clash.Backend (Backend)
+import Clash.Netlist.BlackBox.Types
+  (BlackBoxFunction, BlackBoxMeta(..), TemplateKind(..), emptyBlackBoxMeta)
+import Clash.Netlist.Types
+  (BlackBox (..), BlackBoxContext, EntityOrComponent(..), TemplateFunction(..))
+import qualified Clash.Netlist.Types as NT
+import qualified Clash.Primitives.DSL as DSL
+import qualified Clash.Netlist.Id as Id
+import Clash.Annotations.Primitive (Primitive(..))
+import Data.Text (Text)
+import Control.Monad.State.Lazy (State)
+import Text.Show.Pretty(ppShow)
+import Clash.Explicit.Prelude 
+ 
+vga_controllerBBTF ::
+      forall s. Backend s => Text -> BlackBoxContext -> State s Doc
+vga_controllerBBTF vga_controller bbCtx
+      | [clk_100MHz, reset] <- L.map fst (DSL.tInputs bbCtx),
+        [result] <- DSL.tResults bbCtx,
+        NT.Product _ _ resTyps <- DSL.ety result
+      = do vga_controllerInstName <- Id.makeBasic "vga_controller_inst"
+           let compInps
+                 = [("clk_100MHz", DSL.ety clk_100MHz), ("reset", DSL.ety reset)]
+               compOuts
+                 = L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps
+           (DSL.declarationReturn bbCtx "vga_controller_inst_block"
+              $ (do declares <- mapM
+                                  (\ (name, typ) -> DSL.declare name typ)
+                                  (L.zip ["video_on", "hsync", "vsync", "p_tick", "x", "y"] resTyps)
+                    let [video_on, hsync, vsync, p_tick, x, y] = declares
+                    let inps = [("clk_100MHz", clk_100MHz), ("reset", reset)]
+                        outs
+                          = [("video_on", video_on), ("hsync", hsync), ("vsync", vsync),
+                             ("p_tick", p_tick), ("x", x), ("y", y)]
+                    DSL.compInBlock vga_controller compInps compOuts
+                    DSL.instDecl
+                      Empty (Id.unsafeMake vga_controller) vga_controllerInstName [] inps
+                      outs
+                    pure
+                      [DSL.constructProduct
+                         (DSL.ety result) [video_on, hsync, vsync, p_tick, x, y]]))
+      | otherwise = error (ppShow bbCtx)
+vga_controllerTF :: HasCallStack => Text -> TemplateFunction
+vga_controllerTF entityName
+      = TemplateFunction
+          [0, 1, 2] (const True) (vga_controllerBBTF entityName)
+vga_controllerBBF :: BlackBoxFunction
+vga_controllerBBF _ _ _ _
+      = pure
+          (Right
+             (emptyBlackBoxMeta {bbKind = TDecl},
+              BBFunction
+                "vga_controllerTF" 0 (vga_controllerTF "vga_controller")))
+vga_controller
+    :: Clock System ->
+    Reset System ->
+    ( Signal System Bit          -- ^ video_on 
+     , Signal System Bit         -- ^ Horizontal Sync 
+     , Signal System Bit        -- ^ Vertical Sync
+     , Signal System Bit         -- ^ p_tick
+     , Signal System (BitVector 10)  -- ^ X Position
+     , Signal System (BitVector 10)  -- ^ Y Position
+     )
+vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
+{\-\# OPAQUE vga_controller \#\-\}
+{\-\# ANN vga_controller (let
+      primName = show 'vga_controller
+      tfName = show 'vga_controllerBBF
+    in
+      InlineYamlPrimitive [minBound..] [__i|
+        BlackBoxHaskell:
+          name: #{primName}
+          templateFunction: #{tfName}
+          workInfo: Always
+      |]) \#\-\}
+
+topEntity
+  :: Clock System   -- ^ System Clock (100 MHz)
+  -> Reset System   -- ^ Reset Signal
+  -> Enable System
+  -> Signal System (BitVector 12)  -- ^ Switches input (for color selection)
+  -> ( Signal System Bit         -- ^ Horizontal Sync
+     , Signal System Bit         -- ^ Vertical Sync
+     , Signal System (BitVector 12)  -- ^ RGB Output
+     )
+topEntity clk rst en sw = (hsync, vsync, rgbOut)
+  where
+    -- VGA Controller instantiation
+    (videoOn, hsync, vsync, _, _, _) = vga_controller clk rst
+    -- Resetting register
+    resetting = register clk rst en False (pure False)
+    -- RGB register with conditional input
+    rgbReg = register clk rst en 0 (mux (resetting .||. (fmap bitToBool videoOn)) sw (pure 0))
+    -- Output
+    rgbOut = rgbReg
+-- Synthesize topEntity
+{\-\# ANN topEntity
+  (Synthesize
+    { t_name   = "VGAtopEntity"
+    , t_inputs = [ PortName "clk"
+                 , PortName "rst"
+                 , PortName "en"
+                 , PortName "sw"
+                 ]
+    , t_output = PortProduct "" [PortName "hsync", PortName "vsync", PortName "rgb"]
+    }) \#\-\}
+
+
+@
 -}
 {- $multiclock #multiclock#
 Clash supports designs multiple /clock/ (and /reset/) domains, though perhaps in
