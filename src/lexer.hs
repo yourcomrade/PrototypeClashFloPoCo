@@ -25,7 +25,7 @@ import Data.Maybe ( mapMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 
 -- |This module contains functions to parse and get necessary information from FloPoCo VHDL file
-
+--
 keywords :: [String]
 keywords = ["Input", "Output", "frequency", "Pipeline"]
 -- Define an empty or default InfoEntity with all fields as Nothing
@@ -99,9 +99,12 @@ makeListVHDLcomments vhdlcontent =
 
 -- |Function to extract the last entity from VHDL comment
 getLastInfoEntity :: 
-    Maybe [String] -- ^ List of VHDL comment
-    -> Maybe InfoEntity -- ^ InfoEntity need to be update
-    -> Maybe InfoEntity -- ^ InfoEntity after update
+    -- | List of VHDL comment
+    Maybe [String] 
+    -- | InfoEntity need to be update
+    -> Maybe InfoEntity 
+    -- | InfoEntity after update
+    -> Maybe InfoEntity 
 getLastInfoEntity _ Nothing = Nothing
 getLastInfoEntity Nothing _ = Nothing
 getLastInfoEntity (Just []) (Just infoen) = Just infoen
@@ -135,9 +138,12 @@ findEntityPositions lst =
 
 -- |Function to process FloPoCo VHDL file and extract the main entity and its information
 processVHDLFile ::(MonadIO m) 
-    => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) -- ^Function to process and update InfoEntity, in this library is getLastInfoEntity
-    -> FilePath -- ^FilePath: The path of FloPoCo VHDL file
-    -> m (Maybe InfoEntity) -- ^InfoEntity
+    -- | Function to process and update InfoEntity, in this library is getLastInfoEntity
+    => (Maybe [String] ->Maybe InfoEntity -> Maybe InfoEntity) 
+    -- | FilePath: The path of FloPoCo VHDL file
+    -> FilePath 
+    -- | InfoEntity
+    -> m (Maybe InfoEntity) 
 processVHDLFile process path = do
     handle <- liftIO $ openFile path ReadMode       -- Open the file with liftIO
     contents <- liftIO $ hGetContents handle        -- Read the file's contents

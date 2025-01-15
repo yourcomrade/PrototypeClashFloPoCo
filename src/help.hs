@@ -27,12 +27,13 @@ import Helpargs
 --
 infoEnPlusExample :: InfoEntity
 infoEnPlusExample = InfoEntity {
-    name = Just "plusFloat",
-    freq = Just 100,
+   name = Just "plusFloat",
+   freq = Just 100,
     pipedep = Just 2,
     insig = Just ["clk", "X", "Y"],
     outsig = Just ["R"]
 }
+
 -- |This InfoEntity is used for blackbox of the fmaFloatExample
 --
 -- ==== __Example:__

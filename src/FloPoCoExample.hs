@@ -53,22 +53,25 @@ import qualified Data.Text as Text
 import Clash.Netlist.BlackBox.Util (bbResult)
 import Clash.Explicit.Testbench
 import qualified InfoEn as FloPoCo
-import Help (infoEnVGAControllerExample)
+
 
 
 -- | The Nplus is the Nat number to use as the pipeline depth of the plusFloatExample function
-type Nplus = $(getPipeDep infoEnPlusExample)
+--type Nplus = $(getPipeDep infoEnPlusExample)
 -- | The xp serves as the delay parameter to use for delayN function used internally
 -- inside of the plusFloatExample function
-xp :: SNat Nplus
-xp = SNat::SNat Nplus
+ 
+--xp :: SNat Nplus
+--xp = SNat::SNat Nplus
 -- | Example of the hardware synthesizable function which adds 2 single precision floating point 
 --
 -- ==== __Example:__
-{-
+--
+{-|
 This is the example implementation of the plusFloatExample which uses the old way by
 binding it with BlackBoxFunction, BlackBoxTemplateFunction and TemplateFunction to make it
 hardware synthesizable.
+
 @
 plusFloatExample
   :: forall n . 
@@ -143,16 +146,25 @@ plusFloatBBF _ _ _ _ = do
   pure (Right ((emptyBlackBoxMeta {bbKind = TDecl}), (BBFunction ("plusFloatTF") 0 (plusFloatTF entityName))))
 @
 -}
+type Nplus = $(getPipeDep infoEnPlusExample)
+xp :: SNat Nplus
+xp = SNat::SNat Nplus
 plusFloatExample
   :: forall n . 
-  Clock XilinxSystem -- ^Clock signal
-  -> DSignal XilinxSystem n Float -- ^Operand input signal
-  -> DSignal XilinxSystem n Float -- ^Operand input signal
-  -> DSignal XilinxSystem (n + Nplus) Float -- ^Result output signal
+  -- | Clock signal
+  Clock XilinxSystem 
+  -- | Operand input signal
+  -> DSignal XilinxSystem n Float 
+  -- | Operand input signal
+  -> DSignal XilinxSystem n Float 
+  -- | Result output signal
+  -> DSignal XilinxSystem (n + Nplus) Float
 plusFloatExample clk a b =
   delayN xp undefined enableGen clk (liftA2 (+) a b)
 {-# OPAQUE plusFloatExample #-}
+-- Generate BlackBox for plusFloat
 $(genBlackBox infoEnPlusExample)
+
 {-# ANN plusFloatExample (
     let
       primName = show 'plusFloatExample
@@ -174,12 +186,13 @@ xp2 = SNat::SNat Nfma
 --  This function computes a * b + c
 --
 -- ==== __Example:__
--- 
-{-
+--
+{-|
 This is the example implementation of fmaFloatExample using buit-in template haskell 
 to auto generate BlackBoxFunction, BlackBoxTemplateFunction and TemplateFunction during
 the compile time. It also uses custom built-in primitive function for the pragma
 annotation. 
+
 @
 $(genBlackBox infoEnFMAExample)
 fmaFloatExample
@@ -208,14 +221,22 @@ fmaFloatExample clk a b c negab negc _ =
 -}
 fmaFloatExample
   :: forall n .
-  Clock XilinxSystem -- ^Clock signal
-  -> DSignal XilinxSystem n Float -- ^Operand input signal a
-  -> DSignal XilinxSystem n Float -- ^Operand input signal b
-  -> DSignal XilinxSystem n Float -- ^Operand input signal c
-  -> DSignal XilinxSystem n Bit  -- ^Flag to check if a or b is negative
-  -> DSignal XilinxSystem n Bit  -- ^Flag to check if c is negative
-  -> DSignal XilinxSystem n (BitVector 2) -- ^Unused flag. In FloPoCo, it's roundmode but it has no role in the computation. 
-  -> DSignal XilinxSystem (n + Nfma) Float -- ^Result output signal 
+  -- | Clock signal
+  Clock XilinxSystem 
+  -- | Operand input signal a
+  -> DSignal XilinxSystem n Float 
+  -- | Operand input signal b
+  -> DSignal XilinxSystem n Float 
+  -- | Operand input signal c
+  -> DSignal XilinxSystem n Float 
+  -- | Flag to check if a or b is negative
+  -> DSignal XilinxSystem n Bit  
+  -- | Flag to check if c is negative
+  -> DSignal XilinxSystem n Bit  
+  -- | Unused flag. In FloPoCo, it's roundmode but it has no role in the computation.
+  -> DSignal XilinxSystem n (BitVector 2) 
+  -- | Result output signal 
+  -> DSignal XilinxSystem (n + Nfma) Float 
 fmaFloatExample clk a b c negab negc _ = 
   let 
     resab = mux (fmap (== 1)  negab)
@@ -238,15 +259,18 @@ xp3 = SNat::SNat Nexp
 -- | Example of the hardware synthesizable function which compute the exponent of the single precision floating point
 -- 
 -- ==== __Example:__
--- 
-{-
+--
+{-|
 
 @
 expFloatExample
   :: forall n .
-  Clock XilinxSystem -- ^ Clock signal
-  -> DSignal XilinxSystem n Float -- ^ Operand input signal
-  -> DSignal XilinxSystem (n + Nexp) Float -- ^Result output signal 
+  -- | Clock signal
+  Clock XilinxSystem 
+  -- | Operand input signal
+  -> DSignal XilinxSystem n Float 
+  -- | Result output signal
+  -> DSignal XilinxSystem (n + Nexp) Float 
 expFloatExample clk a = delayN xp3 undefined enableGen clk (liftA exp a)
 {-# OPAQUE expFloatExample #-}
 $(genBlackBox infoEnExpExample)
@@ -256,9 +280,12 @@ $(genBlackBox infoEnExpExample)
 -}
 expFloatExample
   :: forall n .
-  Clock XilinxSystem -- ^ Clock signal
-  -> DSignal XilinxSystem n Float -- ^ Operand input signal
-  -> DSignal XilinxSystem (n + Nexp) Float -- ^Result output signal 
+  -- | Clock signal
+  Clock XilinxSystem 
+  -- | Operand input signal
+  -> DSignal XilinxSystem n Float 
+  -- | Result output signal 
+  -> DSignal XilinxSystem (n + Nexp) Float 
 expFloatExample clk a = delayN xp3 undefined enableGen clk (liftA exp a)
 {-# OPAQUE expFloatExample #-}
 $(genBlackBox infoEnExpExample)
@@ -270,17 +297,23 @@ $(genBlackBox infoEnExpExample)
 --
 -- ==== __Example:__
 --
-{-
+{-|
 @
-vga_controller 
+vga_controller
     :: Clock XilinxSystem ->
     Reset XilinxSystem ->
-    ( Signal XilinxSystem Bit          -- ^ video_on 
-     , Signal XilinxSystem Bit         -- ^ Horizontal Sync 
-     , Signal XilinxSystem Bit        -- ^ Vertical Sync
-     , Signal XilinxSystem Bit         -- ^ p_tick
-     , Signal XilinxSystem (BitVector 10)  -- ^ X Position
-     , Signal XilinxSystem (BitVector 10)  -- ^ Y Position
+    ( -- | video_on 
+      Signal XilinxSystem Bit 
+      -- | Horizontal Sync         
+     , Signal XilinxSystem Bit  
+     -- | Vertical Sync       
+     , Signal XilinxSystem Bit    
+     -- | p_tick    
+     , Signal XilinxSystem Bit  
+     -- | X Position       
+     , Signal XilinxSystem (BitVector 10)  
+     -- | Y Position
+     , Signal XilinxSystem (BitVector 10)  
      )
 vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
 {-# OPAQUE vga_controller #-}
@@ -351,12 +384,18 @@ vga_controllerBBF _ _ _ _
 vga_controller
     :: Clock XilinxSystem ->
     Reset XilinxSystem ->
-    ( Signal XilinxSystem Bit          -- ^ video_on 
-     , Signal XilinxSystem Bit         -- ^ Horizontal Sync 
-     , Signal XilinxSystem Bit        -- ^ Vertical Sync
-     , Signal XilinxSystem Bit         -- ^ p_tick
-     , Signal XilinxSystem (BitVector 10)  -- ^ X Position
-     , Signal XilinxSystem (BitVector 10)  -- ^ Y Position
+    ( -- | video_on 
+      Signal XilinxSystem Bit 
+      -- | Horizontal Sync         
+     , Signal XilinxSystem Bit  
+     -- | Vertical Sync       
+     , Signal XilinxSystem Bit    
+     -- | p_tick    
+     , Signal XilinxSystem Bit  
+     -- | X Position       
+     , Signal XilinxSystem (BitVector 10)  
+     -- | Y Position
+     , Signal XilinxSystem (BitVector 10)  
      )
 vga_controller !clk !rst = deepErrorX "vga_controller: simulation output undefined"
 {-# OPAQUE vga_controller #-}
